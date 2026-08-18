@@ -6,6 +6,10 @@ export const alt = 'Calido Radiators — тепло, которому довер
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+// Required by `output: 'export'`: the card is drawn once at build time and
+// written out as a file, since Pages has no route handler to render it on demand.
+export const dynamic = 'force-static';
+
 /**
  * Share card, drawn from the palette rather than from a photograph: the
  * product shots are all portrait, and letterboxing one into 1200x630 looked

@@ -21,6 +21,8 @@ const manrope = Manrope({
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
+import { withBasePath } from '@/lib/basePath';
+
 export const viewport: Viewport = {
   themeColor: '#1E2A63',
   colorScheme: 'light',
@@ -52,7 +54,7 @@ export function buildMetadata(dict: Dictionary, locale: Locale): Metadata {
     robots: { index: true, follow: true },
     // Declared explicitly rather than by file convention: with two root
     // layouts a conventional app/icon file only attaches to one of them.
-    icons: { icon: [{ url: '/icon.svg', type: 'image/svg+xml' }] },
+    icons: { icon: [{ url: withBasePath('/icon.svg'), type: 'image/svg+xml' }] },
   };
 }
 

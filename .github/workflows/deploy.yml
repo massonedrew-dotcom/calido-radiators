@@ -1,0 +1,62 @@
+# Builds the static export on every push to main and publishes it to GitHub
+# Pages. Nothing here needs a secret: GITHUB_TOKEN is issued per run, and the
+# two public URLs below are the only configuration the build cannot infer.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Lets a deploy be re-run from the Actions tab without an empty commit.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; queue the newer one and let the older finish so a
+# half-uploaded artifact is not what ends up live.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Project sites live under /<repo>. Both values move together if the site
+      # ever gets a custom domain.
+      NEXT_PUBLIC_BASE_PATH: /calido-radiators
+      NEXT_PUBLIC_SITE_URL: https://massonedrew-dotcom.github.io/calido-radiators
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Build static export
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

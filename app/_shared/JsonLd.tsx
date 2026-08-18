@@ -2,6 +2,7 @@ import { SITE_URL } from '@/app/_shared/root';
 import type { Dictionary, Locale } from '@/content';
 import { ASSETS } from '@/content/assets.generated';
 import { formatSpec, MODELS } from '@/content/models';
+import { withBasePath } from '@/lib/basePath';
 
 /**
  * Structured data for the page: one Organization, plus a Product per model.
@@ -11,7 +12,9 @@ import { formatSpec, MODELS } from '@/content/models';
  * is the failure mode search engines penalise.
  */
 
-const abs = (path: string) => new URL(path, SITE_URL).toString();
+// SITE_URL already carries the deployment prefix, but a leading-slash path
+// would discard it during resolution, so the prefix is applied before joining.
+const abs = (path: string) => new URL(withBasePath(path), SITE_URL).toString();
 
 function organization(dict: Dictionary) {
   return {

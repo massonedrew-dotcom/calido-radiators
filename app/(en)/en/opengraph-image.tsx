@@ -6,6 +6,10 @@ export const alt = 'Calido Radiators — heat you can trust';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+// Required by `output: 'export'`: the card is drawn once at build time and
+// written out as a file, since Pages has no route handler to render it on demand.
+export const dynamic = 'force-static';
+
 /** English share card. Same composition as the Russian one. */
 export default function OpengraphImage() {
   return new ImageResponse(
