@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+build/
+
+# public/ and content/assets.generated.ts ARE tracked, despite being derived.
+# scripts/prep-assets.mjs reads its sources from a local Desktop folder that only
+# exists on the authoring machine, so a checkout without the derived output cannot
+# be built anywhere else — including any deploy host. 1.5 MB of webp is a cheap
+# price for a repo that builds from a clean clone.
+
+# Local verification output
+.sheet/
+
+*.tsbuildinfo
+next-env.d.ts
+.env*.local
+.DS_Store
