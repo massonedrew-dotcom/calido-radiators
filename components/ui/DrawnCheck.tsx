@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 
-import { gsap } from '@/lib/gsap';
+import { gsap, loadDrawSVG } from '@/lib/gsap';
 import { useIdle, useIsomorphicLayoutEffect, useReducedMotion } from '@/lib/hooks';
 
 /**
@@ -30,14 +30,28 @@ export function DrawnCheck({
   useIsomorphicLayoutEffect(() => {
     const el = ref.current;
     if (!el || reduced) return;
-    gsap.set(el.querySelectorAll('[data-ring], [data-tick]'), { drawSVG: '0%' });
+    let cancelled = false;
+    // DrawSVG is registered on demand (lib/gsap.ts), so even the resting state
+    // has to wait for it — `drawSVG: '0%'` is a plugin property.
+    void loadDrawSVG().then(() => {
+      if (cancelled) return;
+      gsap.set(el.querySelectorAll('[data-ring], [data-tick]'), { drawSVG: '0%' });
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [reduced]);
 
   useIsomorphicLayoutEffect(() => {
     const el = ref.current;
     if (!el || reduced || !idle) return;
 
-    const ctx = gsap.context(() => {
+    let ctx: gsap.Context | undefined;
+    let cancelled = false;
+
+    void loadDrawSVG().then(() => {
+      if (cancelled) return;
+      ctx = gsap.context(() => {
       const ring = el.querySelector('[data-ring]');
       const tick = el.querySelector('[data-tick]');
       if (!ring || !tick) return;
@@ -50,9 +64,13 @@ export function DrawnCheck({
         })
         .to(ring, { drawSVG: '100%', duration: 0.7 })
         .to(tick, { drawSVG: '100%', duration: 0.35 }, '-=0.15');
-    }, el);
+      }, el);
+    });
 
-    return () => ctx.revert();
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
   }, [reduced, idle, delay]);
 
   return (
@@ -64,7 +82,7 @@ export function DrawnCheck({
       aria-hidden
       focusable="false"
       fill="none"
-      stroke="var(--color-indigo-700)"
+      stroke="var(--color-mark)"
       strokeWidth={1.4}
       className={className}
     >
@@ -89,7 +107,12 @@ export function DrawnTick({ className = '' }: { className?: string }) {
     const el = ref.current;
     if (!el || reduced) return;
 
-    const ctx = gsap.context(() => {
+    let ctx: gsap.Context | undefined;
+    let cancelled = false;
+
+    void loadDrawSVG().then(() => {
+      if (cancelled) return;
+      ctx = gsap.context(() => {
       gsap.fromTo(
         el.querySelector('path'),
         { drawSVG: '0%' },
@@ -100,9 +123,13 @@ export function DrawnTick({ className = '' }: { className?: string }) {
           scrollTrigger: { trigger: el, start: 'top 92%', once: true },
         },
       );
-    }, el);
+      }, el);
+    });
 
-    return () => ctx.revert();
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
   }, [reduced]);
 
   return (
@@ -114,7 +141,7 @@ export function DrawnTick({ className = '' }: { className?: string }) {
       aria-hidden
       focusable="false"
       fill="none"
-      stroke="var(--color-indigo-700)"
+      stroke="var(--color-mark)"
       strokeWidth="1.8"
       className={className}
     >

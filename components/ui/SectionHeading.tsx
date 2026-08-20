@@ -3,9 +3,9 @@ import type { ReactNode } from 'react';
 type Tone = 'indigo' | 'red' | 'light';
 
 const RULE_TONE: Record<Tone, string> = {
-  indigo: 'bg-indigo-700',
+  indigo: 'bg-mark',
   // Thermal sections only: the rule is the heat cue, not decoration.
-  red: 'bg-red-600',
+  red: 'bg-red-500',
   light: 'bg-indigo-100',
 };
 

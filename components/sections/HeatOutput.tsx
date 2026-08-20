@@ -15,29 +15,28 @@ import type { Dictionary } from '@/content';
  */
 export function HeatOutput({ dict }: { dict: Dictionary }) {
   return (
-    <Section id="heat" index={dict.heat.index} tone="paper" labelledBy="heat-title">
-      <div className="frame py-28 md:py-40">
-        <div className="grid-frame items-center gap-y-16">
+    <Section id="heat" labelledBy="heat-title">
+      <div className="frame section-pad">
+        <div className="grid-frame items-center gap-y-10">
           <Reveal className="col-span-4 md:col-span-5">
             <SectionHeading
               id="heat-title"
-              kicker={dict.heat.kicker}
               title={dict.heat.title}
               tone="red"
             />
-            <p className="prose-lead mt-8" data-reveal>
+            <p className="prose-lead mt-6" data-reveal>
               {dict.heat.lead}
             </p>
 
-            <p className="mt-14 flex items-baseline gap-4">
+            <p className="mt-10 flex items-baseline gap-4">
               <span className="kicker">{dict.heat.peakLabel}</span>
               <Counter
                 to={dict.heat.peak}
                 locale={dict.locale}
                 duration={1.6}
-                className="text-[clamp(3rem,8vw,7rem)] leading-none font-extrabold text-ink"
+                className="text-[clamp(3rem,8vw,7rem)] leading-none font-extrabold text-fg-strong"
                 caption={dict.heat.peakUnit}
-                captionClassName="text-sm text-slate"
+                captionClassName="text-sm text-fg"
               />
             </p>
           </Reveal>

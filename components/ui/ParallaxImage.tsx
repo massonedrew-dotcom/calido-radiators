@@ -4,7 +4,7 @@ import { useRef } from 'react';
 
 import { Img } from '@/components/ui/Img';
 import type { AssetId } from '@/content/assets.generated';
-import { gsap } from '@/lib/gsap';
+import { SCRUB, gsap } from '@/lib/gsap';
 import {
   useIdle,
   useIsDesktop,
@@ -55,6 +55,9 @@ export function ParallaxImage({
     if (!target) return;
 
     const ctx = gsap.context(() => {
+      // Promoted for the life of the page: this is a permanent scrub, not a
+      // one-shot, so there is no completion at which to drop the hint.
+      gsap.set(target, { willChange: 'transform', force3D: true });
       gsap.fromTo(
         target,
         { yPercent: from, rotate: rotate?.[0] ?? 0 },
@@ -66,7 +69,7 @@ export function ParallaxImage({
             trigger: el,
             start: 'top bottom',
             end: 'bottom top',
-            scrub: true,
+            scrub: SCRUB,
           },
         },
       );

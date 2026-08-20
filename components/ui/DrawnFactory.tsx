@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 
-import { gsap } from '@/lib/gsap';
+import { gsap, loadDrawSVG } from '@/lib/gsap';
 import { useIdle, useIsomorphicLayoutEffect, useReducedMotion } from '@/lib/hooks';
 
 /**
@@ -19,7 +19,12 @@ export function DrawnFactory({ title, className = '' }: { title: string; classNa
     const el = ref.current;
     if (!el || reduced || !idle) return;
 
-    const ctx = gsap.context(() => {
+    let ctx: gsap.Context | undefined;
+    let cancelled = false;
+
+    void loadDrawSVG().then(() => {
+      if (cancelled) return;
+      ctx = gsap.context(() => {
       const paths = gsap.utils.toArray<SVGPathElement>('path, rect', el);
 
       gsap.fromTo(
@@ -33,9 +38,13 @@ export function DrawnFactory({ title, className = '' }: { title: string; classNa
           scrollTrigger: { trigger: el, start: 'top 88%', once: true },
         },
       );
-    }, el);
+      }, el);
+    });
 
-    return () => ctx.revert();
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
   }, [reduced, idle]);
 
   return (
@@ -47,7 +56,7 @@ export function DrawnFactory({ title, className = '' }: { title: string; classNa
       role="img"
       aria-label={title}
       fill="none"
-      stroke="var(--color-indigo-700)"
+      stroke="var(--color-mark)"
       strokeWidth={1.25}
       strokeLinejoin="round"
       className={className}

@@ -3,12 +3,11 @@
 import { useRef } from 'react';
 
 import { Section } from '@/components/layout/Section';
-import { ArcField } from '@/components/ui/ArcField';
 import { Img } from '@/components/ui/Img';
 import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import type { Dictionary } from '@/content';
-import { gsap } from '@/lib/gsap';
+import { SCRUB, gsap } from '@/lib/gsap';
 import { useIsomorphicLayoutEffect, useReducedMotion } from '@/lib/hooks';
 
 /**
@@ -30,7 +29,7 @@ export function Warranty({ dict }: { dict: Dictionary }) {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         defaults: { ease: 'none' },
-        scrollTrigger: { trigger: el, start: 'top 85%', end: 'bottom bottom', scrub: true },
+        scrollTrigger: { trigger: el, start: 'top 85%', end: 'bottom bottom', scrub: SCRUB },
       });
 
       tl.fromTo('[data-warranty-number]', { yPercent: 14 }, { yPercent: -4 }, 0)
@@ -42,17 +41,15 @@ export function Warranty({ dict }: { dict: Dictionary }) {
   }, [reduced]);
 
   return (
-    <Section id="warranty" index={dict.warranty.index} tone="paper" labelledBy="warranty-title">
-      <ArcField variant="left" />
+    <Section id="warranty" labelledBy="warranty-title">
 
-      <div className="frame pt-28 md:pt-40">
+      <div className="frame section-pad-seam pb-0">
         <Reveal className="max-w-2xl">
           <SectionHeading
             id="warranty-title"
-            kicker={dict.warranty.kicker}
             title={dict.warranty.title}
           />
-          <p className="prose-lead mt-8" data-reveal>
+          <p className="prose-lead mt-6" data-reveal>
             {dict.warranty.lead}
           </p>
           <p className="prose-lead mt-2" data-reveal>
@@ -67,7 +64,7 @@ export function Warranty({ dict }: { dict: Dictionary }) {
       >
         <p
           aria-hidden
-          className="tnum relative z-0 -mb-[0.08em] text-[clamp(9rem,34vw,26rem)] leading-[0.72] font-extrabold text-ink"
+          className="tnum relative z-0 -mb-[0.08em] text-[clamp(9rem,34vw,26rem)] leading-[0.72] font-extrabold text-fg-strong"
           data-warranty-number
         >
           {dict.warranty.number}
@@ -75,7 +72,7 @@ export function Warranty({ dict }: { dict: Dictionary }) {
 
         <span
           aria-hidden
-          className="absolute top-[8%] left-[38%] z-20 text-[clamp(2rem,7vw,5.5rem)] leading-none font-extrabold tracking-[-0.02em] text-indigo-700 uppercase"
+          className="absolute top-[8%] left-[38%] z-20 text-[clamp(2rem,7vw,5.5rem)] leading-none font-extrabold tracking-[-0.02em] text-indigo-300 uppercase"
           data-warranty-word
         >
           {dict.warranty.years}

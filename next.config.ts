@@ -21,14 +21,24 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   images: {
-    // The optimizer is a server route, and there is no server. The sources are
-    // already sized, matted webp from scripts/prep-assets.mjs, so serving them
-    // as-authored costs bandwidth rather than fidelity.
-    unoptimized: true,
-    formats: ['image/avif', 'image/webp'],
-    // Product renders are portrait-heavy; these widths cover the layout breakpoints.
-    deviceSizes: [420, 640, 828, 1080, 1280, 1600, 1920],
-    imageSizes: [96, 160, 240, 320, 480],
+    /**
+     * The optimiser is a server route and there is no server, so the responsive
+     * ladder is pre-rendered at build time by scripts/prep-assets.mjs and this
+     * loader points at it.
+     *
+     * `unoptimized: true` was the previous answer, but that flag also switches
+     * off srcset generation entirely: every device downloaded the master, and a
+     * phone rendering the hero at ~340 CSS px was pulling the 900px file. A
+     * custom loader keeps srcset while still emitting nothing but static files.
+     */
+    loader: 'custom',
+    loaderFile: './lib/imageLoader.ts',
+    // Must match the widths prep-assets emits, or Next will request a rung the
+    // loader has to round away from.
+    // Split so the two lists do not both contain 420, which would put the same
+    // file in the srcset twice under different descriptors.
+    deviceSizes: [720, 1080, 1400],
+    imageSizes: [480],
   },
   experimental: {
     optimizePackageImports: ['gsap'],

@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from 'react';
 
-import { gsap } from '@/lib/gsap';
+import { gsap, loadDrawSVG } from '@/lib/gsap';
 import { useIdle, useIsomorphicLayoutEffect, useReducedMotion } from '@/lib/hooks';
 
 /**
@@ -18,7 +18,14 @@ export function DrawnFlow({ children }: { children: ReactNode }) {
     const el = ref.current;
     if (!el || reduced || !idle) return;
 
-    const ctx = gsap.context(() => {
+    let ctx: gsap.Context | undefined;
+    let cancelled = false;
+
+    // DrawSVG is registered on demand — see lib/gsap.ts. This component is
+    // already gated on idle, so the await adds no perceptible delay.
+    void loadDrawSVG().then(() => {
+      if (cancelled) return;
+      ctx = gsap.context(() => {
       const flow = el.querySelector('[data-flow]');
       const stubs = el.querySelectorAll('[data-stub]');
       if (!flow) return;
@@ -32,9 +39,13 @@ export function DrawnFlow({ children }: { children: ReactNode }) {
           { drawSVG: '100%', duration: 1.1, ease: 'power2.inOut' },
           '-=0.15',
         );
-    }, el);
+      }, el);
+    });
 
-    return () => ctx.revert();
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
   }, [reduced, idle]);
 
   return <div ref={ref}>{children}</div>;

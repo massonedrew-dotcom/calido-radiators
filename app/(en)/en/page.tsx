@@ -1,12 +1,19 @@
+import type { Metadata } from 'next';
+
 import { JsonLd } from '@/app/_shared/JsonLd';
-import { Site } from '@/components/Site';
+import { buildMetadata, buildViewport } from '@/app/_shared/root';
+import { Home } from '@/components/pages/Home';
 import { en } from '@/content/en';
 
-export default function EnPage() {
+export const metadata: Metadata = buildMetadata(en, 'en', 'home');
+
+export const viewport = buildViewport('home');
+
+export default function Page() {
   return (
     <>
       <JsonLd dict={en} locale="en" />
-      <Site dict={en} />
+      <Home dict={en} />
     </>
   );
 }

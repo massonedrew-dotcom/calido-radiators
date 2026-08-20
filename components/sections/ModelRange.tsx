@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Section } from '@/components/layout/Section';
 import { Img } from '@/components/ui/Img';
@@ -8,250 +8,332 @@ import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import type { Dictionary } from '@/content';
 import { formatSpec, MODELS, type RadiatorModel } from '@/content/models';
-import { gsap, ScrollTrigger } from '@/lib/gsap';
-import { useIsomorphicLayoutEffect, useIsDesktop, useReducedMotion } from '@/lib/hooks';
+import { gsap } from '@/lib/gsap';
+import { useIsomorphicLayoutEffect, useReducedMotion } from '@/lib/hooks';
 
 /**
- * 09 — Model range.
+ * The range, as a focus slider.
  *
- * On desktop the section pins and vertical scroll is converted into horizontal
- * travel across the range plus a true-scale size comparison. Everything
- * below the pin is authored as an ordinary snap-scrolling row, which is what
- * mobile and reduced-motion visitors get — no separate markup path.
+ * The first build converted vertical scroll into a pinned horizontal track. It
+ * failed in four separate ways at once: the cards were taller than the viewport
+ * so their advantages and CTA were cut off the bottom, neighbouring cards sat
+ * half-clipped at both edges, there was no indication of which of six you were
+ * looking at, and the content only assembled once you had already scrolled past
+ * it.
+ *
+ * A slider fixes all four by construction. Exactly one card is presented at a
+ * time and it is sized to fit; the neighbours are visible but reduced and
+ * dimmed, so they read as "there is more" rather than as clipped content; the
+ * position is stated as 01 / 06; and nothing is scroll-gated, so the card is
+ * complete the moment the section is on screen.
+ *
+ * Driving is by button, arrow key, or swipe, and the transition is a single
+ * timeline on transform and opacity.
  */
 
 type Slug = keyof Dictionary['range']['taglines'];
 
-function ModelCard({ model, dict }: { model: RadiatorModel; dict: Dictionary }) {
+/** Swipe distance in px before a drag counts as a change of card. */
+const SWIPE = 56;
+
+function Card({
+  model,
+  dict,
+  state,
+  active,
+}: {
+  model: RadiatorModel;
+  dict: Dictionary;
+  /** Where this card sits relative to the active one. */
+  state: 'prev' | 'current' | 'next' | 'far';
+  active: boolean;
+}) {
   const slug = model.slug as Slug;
   const locale = dict.locale === 'ru' ? 'ru' : 'en';
+
+  const offset = state === 'prev' ? -1 : state === 'next' ? 1 : 0;
+  const visible = state !== 'far';
 
   return (
     <article
       data-model={model.slug}
-      className="flex w-[min(86vw,25rem)] shrink-0 snap-center flex-col border border-line bg-white"
-      style={{ transformStyle: 'preserve-3d' }}
+      aria-hidden={!active}
+      inert={!active ? true : undefined}
+      className="absolute inset-0 flex flex-col border border-hairline bg-surface-card backdrop-blur-sm"
+      style={{
+        // 92%, so a neighbour shows as a hand's-width sliver at the frame edge
+        // rather than as half a card. Half a card is what the old horizontal
+        // track produced, and it reads as a rendering fault rather than as an
+        // affordance. The scale and opacity are the brief's.
+        transform: `translate3d(${offset * 96}%, 0, 0) scale(${active ? 1 : 0.88})`,
+        // A neighbour is an edge, not a preview. At 0.4 opacity its spec table
+        // was still legible through the blur at the frame edge and read as a
+        // second card leaking in; 0.18 leaves a shape and nothing to read.
+        opacity: !visible ? 0 : active ? 1 : 0.18,
+        filter: active ? 'none' : 'blur(4px)',
+        pointerEvents: active ? 'auto' : 'none',
+        zIndex: active ? 2 : 1,
+        transition:
+          'transform 620ms var(--ease-out-expo), opacity 480ms var(--ease-out-expo)',
+        willChange: 'transform, opacity',
+      }}
     >
-      <div className="relative overflow-clip bg-paper px-6 pt-10">
-        <Img
-          id={model.image}
-          alt={`${dict.range.imageAlt} ${model.name}`}
-          sizes="(min-width: 768px) 25rem, 86vw"
-          className="mx-auto h-56 w-auto object-contain object-bottom"
-          data-model-image
-        />
-      </div>
+      <div className="grid flex-1 grid-cols-1 sm:grid-cols-[42%_1fr]">
+        {/*
+            A full-bleed detail panel, not a floating cutout.
 
-      <div className="flex flex-1 flex-col p-7">
-        <h3 className="text-2xl" data-model-name>
-          {model.name}
-        </h3>
-        <p className="mt-3 text-sm text-slate">{dict.range.taglines[slug]}</p>
+            Two earlier versions were wrong. The first put a WebGL mesh over the
+            card and hid the photograph underneath; the overlay measured zero
+            pixels tall, so the card showed an empty well. The second showed the
+            photograph `object-contain` with a feathered edge - but every one of
+            the six model renders is an aggressive diagonal macro that runs off
+            its own frame, so contained and floating it read as a broken product
+            shot rather than a product.
 
-        <dl className="mt-7 flex flex-col border-t border-line">
-          {model.specs.map((spec) => (
-            <div
-              key={spec.key}
-              data-spec
-              className="flex items-baseline justify-between gap-4 border-b border-line py-2.5"
-            >
-              <dt className="text-[0.8125rem] text-slate">{dict.range.specLabels[spec.key]}</dt>
-              <dd className="tnum text-[0.9375rem] font-bold whitespace-nowrap text-ink">
-                {formatSpec(spec, locale)}{' '}
-                <span className="font-medium text-slate">{dict.range.units[spec.unit]}</span>
-              </dd>
-            </div>
-          ))}
-        </dl>
+            Bled to the card edge and cropped deliberately, the same asset reads
+            as an art-directed detail, which is what it actually is. The whole
+            product is not lost: the spec table beside it carries the
+            dimensions, and the scale section below compares all six.
+          */}
+        <div className="relative min-h-[12rem] overflow-hidden sm:min-h-0">
+          <Img
+            id={model.image}
+            alt={`${dict.range.imageAlt} ${model.name}`}
+            sizes="(min-width: 640px) 30vw, 100vw"
+            data-card-image
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+          {/* Ties the panel into the card instead of butting one flat rectangle
+              against another. */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(90deg, transparent 55%, var(--color-surface-card) 100%)',
+            }}
+          />
+        </div>
 
-        <ul className="mt-6 flex flex-col gap-2">
-          {dict.range.highlights[slug].map((h) => (
-            <li key={h} className="flex items-start gap-2.5 text-[0.8125rem] text-slate">
-              <svg
-                viewBox="0 0 14 14"
-                width="13"
-                height="13"
-                aria-hidden
-                className="mt-1 shrink-0"
-                fill="none"
-                stroke="var(--color-indigo-700)"
-                strokeWidth="1.8"
+        <div className="flex flex-col p-6 sm:p-7">
+          <h3 className="text-[clamp(1.25rem,2vw,1.75rem)]">{model.name}</h3>
+          <p className="mt-2 text-sm text-fg">{dict.range.taglines[slug]}</p>
+
+          <dl className="mt-5 flex flex-col border-t border-hairline">
+            {model.specs.map((spec) => (
+              <div
+                key={spec.key}
+                className="flex items-baseline justify-between gap-4 border-b border-hairline py-1.5"
               >
-                <path d="M2 7.5l3.4 3.4L12 3.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              {h}
-            </li>
-          ))}
-        </ul>
+                <dt className="text-[0.75rem] text-fg">{dict.range.specLabels[spec.key]}</dt>
+                <dd className="tnum text-[0.8125rem] font-bold whitespace-nowrap text-fg-strong">
+                  {formatSpec(spec, locale)}{' '}
+                  <span className="font-medium text-fg">{dict.range.units[spec.unit]}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          {/* A compact row of marks rather than a stacked list: three bullet
+              paragraphs was most of the height that pushed the CTA off screen. */}
+          <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2">
+            {dict.range.highlights[slug].map((h) => (
+              <li key={h} className="flex items-start gap-2 text-[0.75rem] leading-snug text-fg">
+                <svg
+                  viewBox="0 0 14 14"
+                  width="12"
+                  height="12"
+                  aria-hidden
+                  className="mt-0.5 shrink-0"
+                  fill="none"
+                  stroke="var(--color-red-500)"
+                  strokeWidth="2"
+                >
+                  <path d="M2 7.5l3.4 3.4L12 3.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {h}
+              </li>
+            ))}
+          </ul>
+
+          <a
+            href="#contact"
+            className="mt-auto inline-flex w-fit items-center gap-2 self-start rounded-full bg-red-500 px-6 py-3 text-[0.6875rem] font-bold tracking-[0.1em] text-white uppercase transition-colors hover:bg-red-700"
+          >
+            {dict.nav.cta}
+          </a>
+        </div>
       </div>
     </article>
   );
 }
 
 export function ModelRange({ dict }: { dict: Dictionary }) {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const desktop = useIsDesktop();
+  const [index, setIndex] = useState(0);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const dragStart = useRef<number | null>(null);
   const reduced = useReducedMotion();
-  const [layoutKey, setLayoutKey] = useState(0);
 
-  // The pin distance is baked into the timeline, so a resize has to rebuild the
-  // whole context rather than just refresh it.
+  const total = MODELS.length;
+  const go = useCallback(
+    (delta: number) => setIndex((i) => (i + delta + total) % total),
+    [total],
+  );
+
+  // Arrow keys work whenever the slider itself holds focus, which is what makes
+  // it operable without a pointer.
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      go(1);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      go(-1);
+    }
+  };
+
   useEffect(() => {
-    let t: ReturnType<typeof setTimeout>;
-    const onResize = () => {
-      clearTimeout(t);
-      t = setTimeout(() => setLayoutKey((k) => k + 1), 200);
+    const el = stageRef.current;
+    if (!el) return;
+    const down = (e: PointerEvent) => {
+      dragStart.current = e.clientX;
     };
-    window.addEventListener('resize', onResize);
+    const up = (e: PointerEvent) => {
+      const from = dragStart.current;
+      dragStart.current = null;
+      if (from === null) return;
+      const dx = e.clientX - from;
+      if (Math.abs(dx) > SWIPE) go(dx < 0 ? 1 : -1);
+    };
+    el.addEventListener('pointerdown', down);
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', () => (dragStart.current = null));
     return () => {
-      clearTimeout(t);
-      window.removeEventListener('resize', onResize);
+      el.removeEventListener('pointerdown', down);
+      el.removeEventListener('pointerup', up);
     };
-  }, []);
+  }, [go]);
 
+  // The progress bar is the only thing here that animates on a tween; the cards
+  // themselves ride CSS transitions, which cost nothing when idle.
+  const barRef = useRef<HTMLDivElement>(null);
   useIsomorphicLayoutEffect(() => {
-    const section = sectionRef.current;
-    const track = trackRef.current;
-    if (!section || !track || !desktop || reduced) return;
+    const bar = barRef.current;
+    if (!bar) return;
+    const to = (index + 1) / total;
+    if (reduced) {
+      gsap.set(bar, { scaleX: to });
+      return;
+    }
+    gsap.to(bar, { scaleX: to, duration: 0.62, ease: 'power3.inOut', overwrite: true });
+  }, [index, total, reduced]);
 
-    const ctx = gsap.context(() => {
-      // Must be a plain number, not a function. `containerAnimation` children
-      // resolve their positions against this tween's end value at the moment
-      // they are created; with a function-based value that end is still
-      // unresolved, every child maps against zero, and cards settle at the
-      // wrong angle as they pass the centre.
-      const distance = Math.max(0, track.scrollWidth - window.innerWidth);
-      if (distance === 0) return;
-
-      const travel = gsap.to(track, {
-        x: -distance,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: `+=${distance}`,
-          pin: true,
-          scrub: 1,
-          anticipatePin: 1,
-        },
-      });
-
-      track.querySelectorAll<HTMLElement>('[data-model]').forEach((card) => {
-        // One timeline per card, spanning the whole pass from entering on the
-        // right to leaving on the left, so its midpoint is the card dead centre.
-        //
-        // Two separate tweens sharing `rotateY` and `scale` do not work here:
-        // whichever was created last wins while both are live, and a plain `to`
-        // captures its start value at creation rather than at handover, so the
-        // card never actually settles at 0deg / 1.0 in the middle.
-        //
-        // `containerAnimation` is what lets these triggers measure against the
-        // horizontal travel instead of the page scrollbar.
-        const tl = gsap.timeline({
-          defaults: { ease: 'none' },
-          scrollTrigger: {
-            containerAnimation: travel,
-            trigger: card,
-            start: 'left right',
-            end: 'right left',
-            scrub: true,
-          },
-        });
-
-        tl.fromTo(card, { scale: 0.9, rotateY: -18 }, { scale: 1, rotateY: 0, duration: 1 })
-          .to(card, { scale: 0.9, rotateY: 18, duration: 1 })
-          // Specs assemble while the card comes forward — on transform only.
-          // Staggering opacity here left rows parked at partial alpha for a
-          // third of the pass, which reads to a contrast checker as grey text
-          // on white even though the resting colour is 8:1.
-          .from(
-            card.querySelectorAll('[data-spec]'),
-            { y: 18, duration: 0.75, stagger: 0.08, ease: 'power2.out' },
-            0.15,
-          )
-          // The name runs against its own card, so it reads as a separate plane.
-          .fromTo(
-            card.querySelectorAll('[data-model-name]'),
-            { x: 44 },
-            { x: -44, duration: 2 },
-            0,
-          );
-      });
-    }, section);
-
-    return () => {
-      ctx.revert();
-      ScrollTrigger.refresh();
-    };
-  }, [desktop, reduced, layoutKey]);
+  const relation = (i: number): 'prev' | 'current' | 'next' | 'far' => {
+    if (i === index) return 'current';
+    if (i === (index - 1 + total) % total) return 'prev';
+    if (i === (index + 1) % total) return 'next';
+    return 'far';
+  };
 
   return (
-    <Section
-      id="range"
-      index={dict.range.index}
-      tone="paper"
-      labelledBy="range-title"
-      clip={false}
-    >
-      <div ref={sectionRef} className="flex min-h-svh flex-col justify-center py-24">
-        <div className="frame">
-          <Reveal className="max-w-3xl">
-            <SectionHeading id="range-title" kicker={dict.range.kicker} title={dict.range.title} />
-            <p className="prose-lead mt-8" data-reveal>
-              {dict.range.lead}
-            </p>
-            <p className="kicker mt-8 hidden lg:block" data-reveal>
-              {dict.range.hint}
-            </p>
-          </Reveal>
-        </div>
+    <Section id="range" labelledBy="range-title">
+      <div className="frame section-pad">
+        <Reveal className="max-w-3xl">
+          <SectionHeading id="range-title" kicker={dict.range.kicker} title={dict.range.title} />
+          <p className="prose-lead mt-5" data-reveal>
+            {dict.range.lead}
+          </p>
+        </Reveal>
 
         <div
-          ref={trackRef}
-          className="mt-14 flex snap-x snap-mandatory items-stretch gap-6 overflow-x-auto pb-6 lg:overflow-visible"
-          style={{ paddingInline: 'var(--frame-pad)', perspective: '1400px' }}
+          className="mt-8"
+          role="group"
+          aria-roledescription="carousel"
+          aria-label={dict.range.title}
+          tabIndex={0}
+          onKeyDown={onKeyDown}
         >
-          {MODELS.map((model) => (
-            <ModelCard key={model.slug} model={model} dict={dict} />
-          ))}
+          <div className="mb-5 flex items-center justify-between gap-6">
+            <p className="tnum flex items-baseline gap-2 text-fg-strong">
+              <span className="kicker text-fg">{dict.range.counterLabel}</span>
+              <span className="text-lg font-extrabold">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span className="text-sm text-fg">/ {String(total).padStart(2, '0')}</span>
+            </p>
 
-          {/* True-scale comparison: the same models as procedural geometry,
-              standing on one floor so the height difference is real. */}
-          <div className="flex w-[min(92vw,52rem)] shrink-0 snap-center flex-col border border-line bg-white p-7">
-            <p className="kicker">{dict.range.scaleKicker}</p>
-            <h3 className="mt-4 text-2xl">{dict.range.scaleTitle}</h3>
-            <p className="mt-3 max-w-[42ch] text-sm text-slate">{dict.range.scaleNote}</p>
-
-            <div data-gl-slot="lineup" className="relative mt-6 flex-1">
-              <Img
-                id="models/lineup"
-                alt={dict.range.lineupAlt}
-                sizes="(min-width: 768px) 52rem, 92vw"
-                data-gl-fallback
-                className="absolute inset-0 m-auto h-full w-full object-contain"
-              />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => go(-1)}
+                aria-label={dict.range.prev}
+                className="grid size-10 place-items-center rounded-full border border-hairline text-fg-strong transition-colors hover:border-red-500 hover:text-accent"
+              >
+                <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <path d="M10 2L4 8l6 6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => go(1)}
+                aria-label={dict.range.next}
+                className="grid size-10 place-items-center rounded-full border border-hairline text-fg-strong transition-colors hover:border-red-500 hover:text-accent"
+              >
+                <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <path d="M6 2l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
             </div>
-
-            {/* A grid, not `justify-between`: the names are uneven in length
-                (ELEGANT PREMIUM against BRAVO) and equal columns are what keep
-                each label under the model it belongs to. */}
-            <ul
-              className="mt-6 grid gap-2 border-t border-line pt-4"
-              style={{ gridTemplateColumns: `repeat(${MODELS.length}, minmax(0, 1fr))` }}
-            >
-              {MODELS.map((m) => (
-                <li key={m.slug} className="text-center">
-                  <span className="block text-[0.6875rem] leading-tight font-bold tracking-[0.06em] text-ink uppercase">
-                    {m.name}
-                  </span>
-                  <span className="tnum block text-[0.75rem] text-slate">
-                    {m.section.height} {dict.range.units.mm}
-                  </span>
-                </li>
-              ))}
-            </ul>
           </div>
+
+          <div className="mb-6 h-px w-full bg-hairline">
+            <div ref={barRef} className="h-px origin-left scale-x-0 bg-red-500" />
+          </div>
+
+          {/*
+            A fixed-height stage rather than a content-height one.
+
+            The card is absolutely positioned inside it, so its height is the
+            stage's height and cannot grow past the viewport no matter how long
+            a tagline or a spec label runs in translation. This is the property
+            the old track did not have, and losing it is what cut the CTA off.
+          */}
+          <div
+            ref={stageRef}
+            className="relative h-[clamp(26rem,48svh,30rem)] touch-pan-y select-none"
+          >
+            {MODELS.map((model, i) => (
+              <Card
+                key={model.slug}
+                model={model}
+                dict={dict}
+                state={relation(i)}
+                active={i === index}
+              />
+            ))}
+
+          </div>
+
+          <ul className="mt-6 flex flex-wrap justify-center gap-2">
+            {MODELS.map((model, i) => (
+              <li key={model.slug}>
+                <button
+                  type="button"
+                  onClick={() => setIndex(i)}
+                  aria-label={model.name}
+                  aria-current={i === index ? 'true' : undefined}
+                  className={[
+                    'rounded-full border px-4 py-1.5 text-[0.6875rem] font-bold tracking-[0.08em] uppercase transition-colors',
+                    i === index
+                      ? 'border-red-500 text-accent'
+                      : 'border-hairline text-fg hover:border-indigo-500',
+                  ].join(' ')}
+                >
+                  {model.name}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </Section>

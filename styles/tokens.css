@@ -1,0 +1,183 @@
+/* ---------------------------------------------------------------------------
+   CALIDO — single source of truth for colour.
+
+   Both anchors are sampled straight out of the logo artwork
+   (scripts/prep-assets.mjs, IMG_6205.PNG): the mean of every indigo pixel is
+   #22337E and the mean of every red pixel is #D91222. Nothing here is invented;
+   the ramps are lightness moves on those two hues and nothing else.
+
+   Rules this file enforces:
+     · exactly two chromatic families — indigo and red
+     · exactly three neutrals — ink, slate, paper
+     · one heat terminus (ember) usable ONLY in thermal contexts
+     · no violet, lilac, teal, green or any other hue anywhere in the system
+
+   Tailwind's stock palette is wiped by `--color-*: initial`, so a stray
+   `text-gray-500` or `bg-emerald-400` will not compile — the ban is mechanical,
+   not a convention.
+   --------------------------------------------------------------------------- */
+
+@theme {
+  --color-*: initial;
+
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-inherit: inherit;
+
+  /* --- brand anchors ------------------------------------------------------
+     Named so that shaders, canvas code and docs can refer to "the" brand
+     colour rather than to a rung of a ramp. */
+  --color-calido-indigo: #22337e;
+  --color-calido-red: #d91222;
+
+  /* --- indigo ramp --------------------------------------------------------
+     700 is the anchor. 900 is the page floor and the only near-black in the
+     system; 100 is the lightest tinted surface. */
+  --color-indigo-900: #0d1338;
+  --color-indigo-700: #22337e;
+  --color-indigo-500: #3a4fa8;
+  --color-indigo-300: #8e9ad4;
+  --color-indigo-100: #e3e7f6;
+
+  /* --- red ramp -----------------------------------------------------------
+     500 is the anchor: the CTA fill, the active state, the supply leg. */
+  --color-red-900: #4e080f;
+  --color-red-700: #a20d1a;
+  --color-red-500: #d91222;
+  --color-red-300: #e8776f;
+  --color-red-100: #fadfe0;
+
+  /* --- heat terminus ------------------------------------------------------
+     The one hue outside the two families. Permitted only where the subject is
+     literally temperature: the melt shader, the pour, the convection plumes.
+     Never a UI colour. */
+  --color-ember: #ff7a3c;
+
+  /* --- neutrals, all three of them ---------------------------------------
+     Every one is tinted toward indigo by construction, so nothing on the page
+     is a true grey. `white` below is deliberately NOT one of the three: it is
+     an ink colour for dark surfaces and a knockout for the logo, and it is
+     never allowed to be a section background. */
+  --color-ink: #0d1020;
+  --color-slate: #4c5470;
+  --color-paper: #eef0f8;
+
+  --color-white: #ffffff;
+
+  /* --- surface-relative ink ----------------------------------------------
+     The page is one continuous surface that goes from molten red through deep
+     indigo to a lit product and back, so "the text colour" is not a constant —
+     it depends on where in the story a section sits. `text-fg-strong` written
+     once in a component renders as ink on the light surface and white on the
+     dark one, with no per-section branching at the call site.
+
+     The values below are the LIGHT surface. `.on-dark` at the bottom of this
+     file redeclares these exact names — not a second set of names that these
+     point at. That distinction is the whole reason this works: a custom
+     property's value is substituted on the element that *declares* it, so
+     `--color-fg-strong: var(--fg-strong)` written here would resolve
+     `--fg-strong` at :root and inherit the light value everywhere, no matter
+     what a descendant rebinds. Only redeclaring the referenced name itself
+     reaches the utility.
+
+     Literal `text-ink` / `text-slate` remain for the rare element that must
+     not flip.
+     --- */
+  --color-fg-strong: #0d1020;
+  --color-fg: #4c5470;
+  /* A flat colour, not slate at reduced alpha: alpha put this at 3.0:1 on the
+     lightest surface, under AA for the caption sizes it is used at. This is
+     the lightest value clearing 4.5:1 on the darkest stop of the light
+     gradient (#DFE4F4). */
+  --color-fg-mute: #5c6480;
+  --color-hairline: rgba(34, 51, 126, 0.14);
+  --color-hairline-strong: rgba(34, 51, 126, 0.28);
+  /* Panels sit on a live gradient, so they are translucent tint rather than a
+     flat fill — an opaque card would punch a hole in the thermal surface. */
+  --color-surface-card: rgba(255, 255, 255, 0.5);
+  /* Line-art ink: the drawn checks, the factory glyph, the rule under a
+     heading, the kicker. */
+  --color-mark: #22337e;
+  /* Red as *text*, which is a different requirement from red as a fill.
+     Measured against the real thermal layers (not against axe's fallback —
+     see the note in the README), the brand red is 4.07:1 on the lightest stop
+     of the light surface and 2.4:1 on deep indigo. Both are under AA for the
+     11-13px bold sizes the accent is actually used at, so the accent moves one
+     rung along the ramp in each direction: 4.97:1 light, 5.02:1 dark.
+     `bg-red-500` with white text is unaffected and stays the brand red. */
+  --color-accent: #c00f1e;
+
+  /* --- hairlines ----------------------------------------------------------
+     Indigo at low alpha rather than grey, so rules read as part of the family
+     on both light and dark surfaces. */
+  --color-line: rgba(34, 51, 126, 0.14);
+  --color-line-strong: rgba(34, 51, 126, 0.28);
+  --color-line-dark: rgba(227, 231, 246, 0.18);
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  --spacing-gutter: 1.5rem;
+
+  --container-frame: 1440px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* Raw aliases so shaders, canvas code and inline styles can read the palette
+   without going through a Tailwind utility. */
+:root {
+  --indigo-900: var(--color-indigo-900);
+  --indigo-700: var(--color-indigo-700);
+  --indigo-500: var(--color-indigo-500);
+  --indigo-300: var(--color-indigo-300);
+  --indigo-100: var(--color-indigo-100);
+
+  --red-900: var(--color-red-900);
+  --red-700: var(--color-red-700);
+  --red-500: var(--color-red-500);
+  --red-300: var(--color-red-300);
+  --red-100: var(--color-red-100);
+
+  --ember: var(--color-ember);
+
+  --ink: var(--color-ink);
+  --slate: var(--color-slate);
+  --paper: var(--color-paper);
+  --line: var(--color-line);
+
+  /* Side gutter: 6vw, clamped so ultrawide screens keep the frame centred. */
+  --frame-pad: clamp(1.25rem, 6vw, 7.5rem);
+
+  /* Height of the seam band that carries a surface polarity flip. Referenced
+     by ToneSeam and by the sections that sit either side of one. */
+  --seam-h: clamp(6rem, 12vw, 11rem);
+
+  /* `color-scheme` is deliberately NOT set here. It used to be `dark`, which is
+     the wrong answer on the two light pages, and a `:root` declaration beats
+     the `<meta name="color-scheme">` tag - so stating it in CSS would have made
+     the per-page value unreachable. It now comes from `buildViewport` in
+     app/_shared/root.tsx, keyed to the page's polarity. */
+}
+
+/* ---------------------------------------------------------------------------
+   Dark-surface bindings.
+
+   Unlayered, deliberately, and the reason is a cascade rule that is easy to get
+   wrong: an unlayered declaration beats *any* layered one, whatever the
+   specificity. With `:root` unlayered above and this block inside
+   `@layer components`, `:root`'s light-surface values won everywhere — so every
+   section on the dark half of the page was painting ink #0D1020 on indigo
+   #0D1338, a contrast ratio of 1.04. Keeping both sides of the switch in the
+   same (unlayered) origin is what makes the override actually apply.
+   --------------------------------------------------------------------------- */
+.on-dark {
+  --color-fg-strong: #ffffff;
+  --color-fg: rgba(227, 231, 246, 0.88);
+  --color-fg-mute: rgba(227, 231, 246, 0.68);
+  --color-hairline: rgba(227, 231, 246, 0.18);
+  --color-hairline-strong: rgba(227, 231, 246, 0.34);
+  --color-surface-card: rgba(13, 19, 56, 0.42);
+  --color-mark: #e3e7f6;
+  --color-accent: #ee8a80;
+}

@@ -28,6 +28,58 @@ export const en: Dictionary = {
     cta: 'Request a quote',
   },
 
+
+  pages: {
+    home: {
+      nav: 'Home',
+      title: 'Calido Radiators',
+      description:
+        'Aluminium and bimetallic radiator plant in Uzbekistan, in production since 2015.',
+      card: 'Overview of the plant and the product.',
+    },
+    about: {
+      nav: 'The plant',
+      title: 'The plant',
+      description: 'Production, capacity, quality control and warranty for Calido radiators.',
+      card: 'Who we are, how much we make, how every section is checked.',
+    },
+    technology: {
+      nav: 'Technology',
+      title: 'Technology',
+      description:
+        'High-pressure die casting, bimetallic section construction and heat output.',
+      card: 'Die casting, section construction, heat output.',
+    },
+    models: {
+      nav: 'Model range',
+      title: 'Model range',
+      description: 'Six Calido radiator models, size comparison and factory colours.',
+      card: 'Six models compared by height, output and weight.',
+    },
+    installation: {
+      nav: 'Installation',
+      title: 'Installation',
+      description: 'Heating-system compatibility and radiator connection types.',
+      card: 'System compatibility and three connection types.',
+    },
+    contact: {
+      nav: 'Contact',
+      title: 'Contact',
+      description: 'Send a request: we will pick the model and work out the section count.',
+      card: 'Section-count calculation for your project.',
+    },
+  },
+
+  overview: {
+    title: 'Where to next',
+    lead: 'Four areas: production, technology, the range, and installation.',
+  },
+
+  start: {
+    title: 'Let us size your project',
+    lead: 'Tell us the floor area and system type. We will pick the model and the section count.',
+  },
+
   progress: { label: 'Reading progress', of: 'of' },
 
   hero: {
@@ -72,7 +124,7 @@ export const en: Dictionary = {
     stages: [
       { id: 'mould', label: 'Mould', text: 'The steel die stands ready for the pour.' },
       { id: 'melt', label: 'Melt', text: 'Aluminium fills the die under high pressure.' },
-      { id: 'cast', label: 'Section', text: 'The finished section — dense, with no voids.' },
+      { id: 'cast', label: 'Section', text: 'The finished section: dense, with no voids.' },
     ],
     imageAlt: 'A Calido radiator section formed by high-pressure die casting',
   },
@@ -83,12 +135,29 @@ export const en: Dictionary = {
     index: '05',
     kicker: 'Construction',
     title: 'What are bimetallic radiators made of',
-    left: [
-      'Stainless steel manifolds',
-      'Die casting',
-      'Small volume of coolant guarantees high energy efficiency and low inertia',
+    hint: 'Hover a part to find it on the section',
+    parts: [
+      {
+        id: 'collector',
+        label: 'Steel manifold',
+        text: 'Stainless steel manifolds throughout.',
+      },
+      {
+        id: 'fins',
+        label: 'Aluminium finning',
+        text: 'Die cast. A small volume of coolant guarantees high energy efficiency and low inertia.',
+      },
+      {
+        id: 'body',
+        label: 'Assembled section',
+        text: 'Smart design.',
+      },
+      {
+        id: 'coating',
+        label: 'Coating',
+        text: 'Persistent two-staged coating. Any colour of your choice.',
+      },
     ],
-    right: ['Persistent two-staged coating', 'Smart design', 'Any colour of your choice'],
     imageAlt: 'Construction of a Calido bimetallic radiator section',
   },
 
@@ -160,7 +229,7 @@ export const en: Dictionary = {
 
   range: {
     index: '11',
-    kicker: 'Model range',
+    kicker: 'Products',
     title: 'Model range',
     lead: 'Six models, from the compact CLASSIC 350 to the flagship INFINITY.',
     hint: 'Scroll to move through the range',
@@ -187,7 +256,7 @@ export const en: Dictionary = {
       infinity: ['High heat output', 'Modern design', 'Reliable for years'],
       elegant: ['High heat output', 'Modern design', '10-year warranty'],
       'elegant-premium': [
-        'Highest output in the range — 230 W',
+        'Highest output in the range, 230 W',
         'Modern design',
         '10-year warranty',
       ],
@@ -196,10 +265,24 @@ export const en: Dictionary = {
       'classic-350': ['Compact size', 'High heat output', '10-year warranty'],
     },
     imageAlt: 'Calido radiator',
+    counterLabel: 'Model',
+    prev: 'Previous model',
+    next: 'Next model',
+  },
+
+  scale: {
+    kicker: 'Comparison',
+    title: 'True-scale sizes',
+    note: 'All six models at one scale. The section-height spread is 161 mm between the tallest and the shortest.',
     lineupAlt: 'The Calido radiator range lined up by descending height',
-    scaleKicker: 'Comparison',
-    scaleTitle: 'True-scale sizes',
-    scaleNote: 'All six models at one scale, using the section heights from the specifications.',
+    metricLabel: 'Compare by',
+    metrics: [
+      { id: 'height', label: 'Section height', unit: 'mm' },
+      { id: 'output', label: 'Heat output', unit: 'W' },
+      { id: 'weight', label: 'Section weight', unit: 'kg' },
+    ],
+    axisLabel: 'Scale',
+    baselineLabel: 'Shared baseline',
   },
 
   colors: {
@@ -234,7 +317,7 @@ export const en: Dictionary = {
     index: '14',
     kicker: 'Get in touch',
     title: 'Request a quote',
-    lead: 'Tell us about the project — we will pick the model and work out the section count.',
+    lead: 'Tell us about the project. We will pick the model and work out the section count.',
     form: {
       name: { label: 'Name', placeholder: 'What should we call you' },
       phone: { label: 'Phone', placeholder: '+998 __ ___ __ __' },
@@ -255,9 +338,9 @@ export const en: Dictionary = {
     details: {
       title: 'Contacts',
       items: [
-        { label: 'Phone', value: '—' },
-        { label: 'E-mail', value: '—' },
-        { label: 'Address', value: '—' },
+        { label: 'Phone', value: 'to be confirmed' },
+        { label: 'E-mail', value: 'to be confirmed' },
+        { label: 'Address', value: 'to be confirmed' },
       ],
     },
     social: { title: 'Social', items: [] },

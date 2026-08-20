@@ -2,7 +2,7 @@
 
 import { useRef, type ElementType } from 'react';
 
-import { gsap, SplitText } from '@/lib/gsap';
+import { gsap, loadSplitText, type SplitText } from '@/lib/gsap';
 import { useIsDesktop, useIsomorphicLayoutEffect, useReducedMotion } from '@/lib/hooks';
 
 /**
@@ -47,8 +47,10 @@ export function SplitHeading({
     if (!el || reduced || desktop === null) return;
 
     let split: SplitText | undefined;
+    let cancelled = false;
 
-    const ctx = gsap.context(() => {
+    const build = (SplitTextCtor?: typeof SplitText) =>
+      gsap.context(() => {
       if (!desktop) {
         gsap.from(el, {
           y: 24,
@@ -61,7 +63,7 @@ export function SplitHeading({
         return;
       }
 
-      split = SplitText.create(el, { type: 'chars', charsClass: 'split-char' });
+      split = SplitTextCtor!.create(el, { type: 'chars', charsClass: 'split-char' });
 
       gsap.set(split.chars, { willChange: 'transform, opacity, filter' });
 
@@ -78,10 +80,27 @@ export function SplitHeading({
           gsap.set(split!.chars, { clearProps: 'willChange,filter' });
         },
       });
-    }, el);
+      }, el);
+
+    /**
+     * Mobile gets the plain fade and never loads SplitText at all — which is
+     * the point of the lazy registration: splitting a headline into per-glyph
+     * spans is desktop-only choreography, and parsing the plugin during a phone's
+     * hydration was paying for a code path that branch never takes.
+     */
+    let ctx: gsap.Context | undefined;
+    if (!desktop) {
+      ctx = build();
+    } else {
+      void loadSplitText().then((SplitTextCtor) => {
+        if (cancelled) return;
+        ctx = build(SplitTextCtor);
+      });
+    }
 
     return () => {
-      ctx.revert();
+      cancelled = true;
+      ctx?.revert();
       split?.revert();
     };
   }, [reduced, desktop, delay, start, text]);

@@ -27,6 +27,62 @@ export const ru = {
     cta: 'Оставить заявку',
   },
 
+
+  // Page-level copy. The nav, the <title>, and the overview cards on the home
+  // page all read from here, so a page cannot appear in one and be missing from
+  // another. Descriptions are one sentence, written for the meta tag first.
+  pages: {
+    home: {
+      nav: 'Главная',
+      title: 'Calido Radiators',
+      description:
+        'Завод алюминиевых и биметаллических радиаторов в Узбекистане. Работаем с 2015 года.',
+      card: 'Обзор завода и продукции.',
+    },
+    about: {
+      nav: 'О заводе',
+      title: 'О заводе',
+      description:
+        'Производство, мощности, контроль качества и гарантия на радиаторы Calido.',
+      card: 'Кто мы, сколько выпускаем и как проверяем каждую секцию.',
+    },
+    technology: {
+      nav: 'Технология',
+      title: 'Технология',
+      description:
+        'Литьё под высоким давлением, устройство биметаллической секции и теплоотдача.',
+      card: 'Литьё под давлением, устройство секции, теплоотдача.',
+    },
+    models: {
+      nav: 'Модельный ряд',
+      title: 'Модельный ряд',
+      description: 'Шесть моделей радиаторов Calido, сравнение размеров и заводские цвета.',
+      card: 'Шесть моделей, сравнение по высоте, теплоотдаче и весу.',
+    },
+    installation: {
+      nav: 'Монтаж',
+      title: 'Монтаж',
+      description: 'Совместимость с системами отопления и типы подключения радиатора.',
+      card: 'Совместимость с системами и три типа подключения.',
+    },
+    contact: {
+      nav: 'Контакты',
+      title: 'Контакты',
+      description: 'Оставьте заявку: подберём модель и рассчитаем количество секций.',
+      card: 'Расчёт количества секций под ваш объект.',
+    },
+  },
+
+  overview: {
+    title: 'Что дальше',
+    lead: 'Четыре раздела: производство, технология, модельный ряд и монтаж.',
+  },
+
+  start: {
+    title: 'Рассчитаем ваш объект',
+    lead: 'Скажите площадь и тип системы. Подберём модель и количество секций.',
+  },
+
   progress: { label: 'Прогресс просмотра', of: 'из' },
 
   hero: {
@@ -44,7 +100,7 @@ export const ru = {
     index: '02',
     kicker: 'Кто мы',
     title: 'Кто мы?',
-    lead: 'Calido — современный завод по производству алюминиевых и биметаллических радиаторов.',
+    lead: 'Calido: современный завод по производству алюминиевых и биметаллических радиаторов.',
     sinceLabel: 'Работаем с',
     since: 2015,
     sinceSuffix: 'года',
@@ -71,23 +127,46 @@ export const ru = {
     stages: [
       { id: 'mould', label: 'Форма', text: 'Стальная пресс-форма готова к заливке.' },
       { id: 'melt', label: 'Расплав', text: 'Алюминий заполняет форму под высоким давлением.' },
-      { id: 'cast', label: 'Секция', text: 'Готовая секция — плотная структура без пустот.' },
+      { id: 'cast', label: 'Секция', text: 'Готовая секция: плотная структура без пустот.' },
     ],
     imageAlt: 'Секция радиатора Calido, отлитая под высоким давлением',
   },
 
   // Transcribed from the printed catalogue spread "Как устроен биметаллический
-  // радиатор" (p. 7). Six callouts, three per side, top to bottom.
+  // радиатор" (p. 7).
+  //
+  // The spread prints six loose callouts. Here they are regrouped onto the four
+  // parts the section actually comes apart into, because a leader line has to
+  // point at something: "любой цвет на ваш выбор" is a property of the coating,
+  // not a seventh component. Every claim from the spread survives, none is
+  // added.
   anatomy: {
     index: '05',
     kicker: 'Конструкция',
     title: 'Как устроен биметаллический радиатор',
-    left: [
-      'Полностью стальной коллектор',
-      'Литьё под давлением',
-      'Небольшой объём теплоносителя гарантирует высокую энергоэффективность и малую инерционность',
+    hint: 'Наведите на подпись, чтобы найти деталь на снимке',
+    parts: [
+      {
+        id: 'collector',
+        label: 'Стальной коллектор',
+        text: 'Полностью стальной коллектор.',
+      },
+      {
+        id: 'fins',
+        label: 'Алюминиевое оребрение',
+        text: 'Литьё под давлением. Небольшой объём теплоносителя гарантирует высокую энергоэффективность и малую инерционность.',
+      },
+      {
+        id: 'body',
+        label: 'Секция в сборе',
+        text: 'Умный дизайн.',
+      },
+      {
+        id: 'coating',
+        label: 'Покрытие',
+        text: 'Стойкая двухэтапная покраска. Любой цвет на ваш выбор.',
+      },
     ],
-    right: ['Стойкая двухэтапная покраска', 'Умный дизайн', 'Любой цвет на ваш выбор'],
     imageAlt: 'Секция биметаллического радиатора Calido в разрезе конструкции',
   },
 
@@ -161,7 +240,7 @@ export const ru = {
 
   range: {
     index: '11',
-    kicker: 'Модельный ряд',
+    kicker: 'Продукция',
     title: 'Модельный ряд',
     lead: 'Шесть моделей: от компактной CLASSIC 350 до флагманской INFINITY.',
     hint: 'Прокрутите, чтобы пройти ряд',
@@ -189,7 +268,7 @@ export const ru = {
       elegant: ['Высокая теплоотдача', 'Современный дизайн', 'Гарантия 10 лет'],
       // 230 Вт — максимум по таблице характеристик всего ряда.
       'elegant-premium': [
-        'Максимальная теплоотдача в ряду — 230 Вт',
+        'Максимальная теплоотдача в ряду, 230 Вт',
         'Современный дизайн',
         'Гарантия 10 лет',
       ],
@@ -198,10 +277,30 @@ export const ru = {
       'classic-350': ['Компактный размер', 'Высокая теплоотдача', 'Гарантия 10 лет'],
     },
     imageAlt: 'Радиатор Calido',
+    counterLabel: 'Модель',
+    prev: 'Предыдущая модель',
+    next: 'Следующая модель',
+  },
+
+  // Its own section now, not the seventh card of the slider. A comparison of
+  // the whole range is a different kind of object from a product card, and
+  // parking it at the end of a card track hid it behind a horizontal scroll.
+  scale: {
+    kicker: 'Сравнение',
+    title: 'Размеры в масштабе',
+    note: 'Все шесть моделей в одном масштабе. Разница по высоте секции составляет 161 мм между самой высокой и самой низкой.',
     lineupAlt: 'Модельный ряд радиаторов Calido в ряд по убыванию высоты',
-    scaleKicker: 'Сравнение',
-    scaleTitle: 'Размеры в масштабе',
-    scaleNote: 'Все шесть моделей в одном масштабе — по высоте секции из технических характеристик.',
+    // The height spread across five of the six models is 33 mm, which no chart
+    // can make legible on its own — hence the metric switch and the printed
+    // figures next to every bar.
+    metricLabel: 'Сравнить по',
+    metrics: [
+      { id: 'height', label: 'Высоте секции', unit: 'мм' },
+      { id: 'output', label: 'Теплоотдаче', unit: 'Вт' },
+      { id: 'weight', label: 'Весу секции', unit: 'кг' },
+    ],
+    axisLabel: 'Шкала',
+    baselineLabel: 'Общая база',
   },
 
   colors: {
@@ -209,7 +308,7 @@ export const ru = {
     kicker: 'Покрытие',
     title: 'Разнообразие цветов',
     lead: 'Радиаторы Calido могут быть окрашены в любой цвет.',
-    note: 'Ниже — пять заводских исполнений. Другие цвета по RAL — под заказ.',
+    note: 'Ниже пять заводских исполнений. Другие цвета по RAL доступны под заказ.',
     swatchLabel: 'Выбрать цвет',
     names: {
       white: 'Белый',
@@ -228,7 +327,7 @@ export const ru = {
     lead: 'Мы уверены в качестве своей продукции.',
     number: '10',
     years: 'лет',
-    sub: 'Гарантия — 10 лет.',
+    sub: 'Гарантия 10 лет.',
     imageAlt: 'Радиатор Calido в горчичном исполнении',
   },
 
@@ -236,7 +335,7 @@ export const ru = {
     index: '14',
     kicker: 'Связаться',
     title: 'Оставьте заявку',
-    lead: 'Расскажите о задаче — подберём модель и рассчитаем количество секций.',
+    lead: 'Расскажите о задаче. Подберём модель и рассчитаем количество секций.',
     form: {
       name: { label: 'Имя', placeholder: 'Как к вам обращаться' },
       phone: { label: 'Телефон', placeholder: '+998 __ ___ __ __' },
@@ -257,9 +356,9 @@ export const ru = {
     details: {
       title: 'Контакты',
       items: [
-        { label: 'Телефон', value: '—' },
-        { label: 'E-mail', value: '—' },
-        { label: 'Адрес', value: '—' },
+        { label: 'Телефон', value: 'уточняется' },
+        { label: 'E-mail', value: 'уточняется' },
+        { label: 'Адрес', value: 'уточняется' },
       ],
     },
     social: { title: 'Соцсети', items: [] as { label: string; href: string }[] },

@@ -43,7 +43,7 @@ export function Leader({ side, delay = 0 }: { side: 'left' | 'right'; delay?: nu
     <span
       ref={ref}
       aria-hidden
-      className={`mt-4 block h-px bg-line-strong ${side === 'right' ? 'origin-right' : 'origin-left'}`}
+      className={`mt-4 block h-px bg-hairline-strong ${side === 'right' ? 'origin-right' : 'origin-left'}`}
     />
   );
 }

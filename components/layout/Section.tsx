@@ -1,24 +1,26 @@
 import type { ReactNode } from 'react';
 
-import type { SectionId } from '@/content';
+import { SURFACE, type SectionId } from '@/lib/pages';
 
 /**
- * Semantic wrapper for every scroll section. The `index` is the story-style
- * counter, rendered as a small marker in the top-left of the frame so the page
- * keeps the numbered rhythm of the source slides.
+ * Semantic wrapper for every scroll section.
+ *
+ * Sections have no background of their own. The page has exactly one, in
+ * ThermalBackdrop, and all this does is set ink polarity from lib/pages.ts so
+ * the copy colour and the colour behind it cannot disagree.
+ *
+ * The seam band that used to live here is gone. It existed to carry a
+ * dark-to-light flip mid-page, and pages no longer flip: one polarity per page
+ * is the rule now, and the temperature moves between pages instead.
  */
 export function Section({
   id,
-  index,
-  tone = 'white',
   className = '',
   labelledBy,
   clip = true,
   children,
 }: {
   id: SectionId;
-  index?: string;
-  tone?: 'white' | 'paper' | 'dark';
   className?: string;
   labelledBy?: string;
   /**
@@ -28,31 +30,22 @@ export function Section({
   clip?: boolean;
   children: ReactNode;
 }) {
-  const toneClass =
-    tone === 'dark'
-      ? 'on-dark bg-indigo-900'
-      : tone === 'paper'
-        ? 'bg-paper text-slate'
-        : 'bg-white text-slate';
+  const dark = SURFACE[id] === 'dark';
 
   return (
     <section
       id={id}
       aria-labelledby={labelledBy}
-      className={`relative isolate ${clip ? 'overflow-clip' : ''} ${toneClass} ${className}`}
+      data-surface={dark ? 'dark' : 'light'}
+      className={[
+        'relative isolate',
+        clip ? 'overflow-clip' : '',
+        dark ? 'on-dark' : 'text-fg',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
-      {/* The marker carries no opacity dimming: at 11px bold that was landing
-          at 2.1:1. These tokens are already the quiet end of the palette. */}
-      {index ? (
-        <span
-          aria-hidden
-          className={`tnum pointer-events-none absolute top-8 left-[var(--frame-pad)] z-10 text-[0.6875rem] font-bold tracking-[0.18em] select-none ${
-            tone === 'dark' ? 'text-indigo-100/80' : 'text-slate'
-          }`}
-        >
-          {index}
-        </span>
-      ) : null}
       {children}
     </section>
   );

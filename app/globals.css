@@ -1,69 +1,5 @@
 @import 'tailwindcss';
-
-/* ---------------------------------------------------------------------------
-   Design tokens.
-
-   The colour namespace is wiped and rebuilt from the logo, so Tailwind's stock
-   greys simply do not exist: `text-gray-500` will not compile. Every neutral in
-   the system is tinted toward indigo by construction.
-   --------------------------------------------------------------------------- */
-@theme {
-  --color-*: initial;
-
-  --color-transparent: transparent;
-  --color-current: currentColor;
-  --color-inherit: inherit;
-
-  --color-white: #ffffff;
-  --color-paper: #f4f5f9;
-  --color-ink: #12151f;
-  --color-slate: #4a5164;
-
-  --color-indigo-900: #1e2a63;
-  --color-indigo-700: #2b3a87;
-  --color-indigo-500: #3d51b5;
-  --color-indigo-100: #e4e8f7;
-
-  --color-red-600: #da1f26;
-  --color-red-100: #fde8e9;
-
-  /* Heat-gradient terminus. Only ever paired with --color-red-600. */
-  --color-ember: #ff6a3d;
-
-  --color-line: rgba(43, 58, 135, 0.12);
-  --color-line-strong: rgba(43, 58, 135, 0.24);
-  --color-line-dark: rgba(228, 232, 247, 0.16);
-
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-
-  --spacing-gutter: 1.5rem;
-
-  --container-frame: 1440px;
-
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
-}
-
-/* Raw aliases so shaders, canvas code and inline styles can read the palette
-   without going through a Tailwind utility. */
-:root {
-  --indigo-900: var(--color-indigo-900);
-  --indigo-700: var(--color-indigo-700);
-  --indigo-500: var(--color-indigo-500);
-  --indigo-100: var(--color-indigo-100);
-  --red-600: var(--color-red-600);
-  --red-100: var(--color-red-100);
-  --ember: var(--color-ember);
-  --paper: var(--color-paper);
-  --ink: var(--color-ink);
-  --slate: var(--color-slate);
-  --line: var(--color-line);
-
-  /* Side gutter: 6vw, clamped so ultrawide screens keep the frame centred. */
-  --frame-pad: clamp(1.25rem, 6vw, 7.5rem);
-
-  color-scheme: light;
-}
+@import '../styles/tokens.css';
 
 @layer base {
   * {
@@ -78,11 +14,16 @@
        scrolls sideways. `clip` rather than `hidden` because `hidden` would make
        this a scroll container and break every ScrollTrigger pin on the page. */
     overflow-x: clip;
+    /* Behind the fixed thermal stack, so overscroll and the moment before
+       hydration are the page floor rather than white. */
+    background-color: var(--color-indigo-900);
   }
 
   body {
-    background-color: var(--color-white);
-    color: var(--color-slate);
+    /* Deliberately transparent: ThermalBackdrop is the only background on the
+       site and it has to be what shows through every section. */
+    background-color: transparent;
+    color: var(--color-fg);
     font-family: var(--font-sans);
     font-weight: 400;
     line-height: 1.55;
@@ -91,10 +32,16 @@
     overflow-x: clip;
   }
 
+  /* Everything the visitor reads sits above the backdrop stack (z-0). */
+  main {
+    position: relative;
+    z-index: 1;
+  }
+
   h1,
   h2,
   h3 {
-    color: var(--color-ink);
+    color: var(--color-fg-strong);
     font-weight: 800;
     letter-spacing: -0.02em;
     line-height: 0.95;
@@ -120,6 +67,24 @@
   ::selection {
     background: var(--color-indigo-100);
     color: var(--color-indigo-900);
+  }
+
+  /* Kills the 300ms tap delay and the default grey flash on touch. */
+  a,
+  button,
+  [role='button'],
+  input,
+  textarea,
+  select {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* A deep link to #warranty must not land under the fixed header, and this
+     has to work with JavaScript off — HashRouting only covers the scripted
+     path. 6.5rem clears the 88px bar with a little air. */
+  section[id] {
+    scroll-margin-top: 6.5rem;
   }
 
   img,
@@ -165,13 +130,65 @@
     }
   }
 
+  /* ---------------------------------------------------------------------
+     Vertical rhythm.
+
+     One class instead of a `py-28 md:py-40` repeated fourteen times. The
+     figures are down roughly a third from the first build: the audit found
+     sections running past 100vh with content filling a third of the screen,
+     and the fix is fewer dead pixels rather than more scroll.
+     --------------------------------------------------------------------- */
+  .section-pad {
+    padding-block: clamp(4.5rem, 8vw, 8rem);
+  }
+
+  .section-pad-t {
+    padding-block-start: clamp(4.5rem, 8vw, 8rem);
+  }
+
+  /* ---------------------------------------------------------------------
+     Clearance under the fixed bar for the first thing on a page.
+
+     The bar is 88px at `lg` and 80px below it, while the rhythm minimum above
+     is 4.5rem = 72px — so on narrow screens, and at exactly 1024 where 8vw is
+     still only 82px, the opening kicker rendered underneath it. Topping the
+     first section up to 7rem gives the bar 24px of air at its tallest, and
+     `max()` leaves wide viewports, where 8vw already clears it, untouched.
+
+     Same layer as `.section-pad` on purpose. In `@layer base` this lost to it
+     outright — layer order decides before specificity is even consulted, and
+     `components` comes after `base` — so the rule silently did nothing.
+
+     `:first-of-type`, not `:first-child`: ThermalBackdrop is the first child
+     of `main` and would make the selector match nothing.
+
+     Raising the rhythm class rather than padding the section means this
+     applies to exactly the sections that use the standard rhythm, and cannot
+     stack on top of one that sizes its own opening. The pinned technology
+     panel is the one that does, and it handles the bar itself.
+
+     The hero is excluded on purpose. It is deliberately full-bleed under a
+     transparent bar, and that is the one composition the clearance would
+     break rather than fix.
+     --------------------------------------------------------------------- */
+  main > section:first-of-type:not(#hero) > .section-pad,
+  main > section:first-of-type:not(#hero) > .section-pad-t {
+    padding-block-start: max(clamp(4.5rem, 8vw, 8rem), 7rem);
+  }
+
+  /* Sections that open with a seam band need their content clear of it. */
+  .section-pad-seam {
+    padding-block-start: calc(var(--seam-h) + clamp(2.5rem, 5vw, 5rem));
+    padding-block-end: clamp(4.5rem, 8vw, 8rem);
+  }
+
   /* Section headline scale, per the type spec. */
   .display {
-    font-size: clamp(2.5rem, 7vw, 8rem);
+    font-size: clamp(2.5rem, 6.4vw, 7rem);
   }
 
   .display-sm {
-    font-size: clamp(2rem, 4.6vw, 4.25rem);
+    font-size: clamp(1.875rem, 4.2vw, 3.75rem);
   }
 
   /* 12px / 0.18em rubric above every section heading. */
@@ -181,14 +198,17 @@
     letter-spacing: 0.18em;
     line-height: 1;
     text-transform: uppercase;
-    color: var(--color-indigo-700);
+    /* Not a literal indigo-700: at 12px bold that is 1.6:1 on the deep-indigo
+       half of the page. `--mark` is the same indigo on the light surface and
+       indigo-100 on the dark one. */
+    color: var(--color-mark);
   }
 
   .prose-lead {
     max-width: 52ch;
-    font-size: clamp(1rem, 1.35vw, 1.25rem);
+    font-size: clamp(0.9375rem, 1.15vw, 1.125rem);
     line-height: 1.55;
-    color: var(--color-slate);
+    color: var(--color-fg);
   }
 
   .tnum {
@@ -196,8 +216,11 @@
     font-feature-settings: 'tnum' 1;
   }
 
+  /* The token half of `.on-dark` lives unlayered in styles/tokens.css — see the
+     note there. What stays here is everything that is an ordinary declaration
+     rather than a custom property. */
   .on-dark {
-    color: var(--color-indigo-100);
+    color: var(--color-fg);
   }
 
   .on-dark h1,
@@ -206,31 +229,69 @@
     color: var(--color-white);
   }
 
-  .on-dark .kicker {
-    color: var(--color-indigo-100);
-  }
-
   .on-dark .prose-lead {
-    color: color-mix(in oklab, var(--color-indigo-100) 82%, transparent);
+    color: var(--color-fg);
   }
 }
 
 @layer components {
-  /* The still photograph inside a 3D slot. It is the real content until the
-     stage confirms a live GL context, then it hands over. */
-  [data-gl-fallback] {
-    transition: opacity 0.6s var(--ease-out-expo);
+  /* ---------------------------------------------------------------------
+     Product stills sit on a live gradient now, not on a flat card, so any
+     residual studio background around a cutout would read as a rectangle.
+     Feathering the outer few percent dissolves the edge into whatever the
+     backdrop happens to be at that scroll position.
+     --------------------------------------------------------------------- */
+  .feather-edges {
+    -webkit-mask-image: radial-gradient(115% 108% at 50% 50%, #000 62%, transparent 100%);
+    mask-image: radial-gradient(115% 108% at 50% 50%, #000 62%, transparent 100%);
   }
 
-  [data-gl='on'] [data-gl-fallback] {
-    opacity: 0;
+  /**
+   * Dissolves the two edges where the source crop cut through the product.
+   *
+   * The hero render is a diagonal close-up lifted from a 1080x1920 story, and
+   * the radiator runs off the bottom and left of that frame: measured, the
+   * product occupies 62% of the bottom edge and 42% of the left. On a story
+   * that is intentional bleed; dropped onto a page it reads as the product
+   * sitting on an invisible rectangular slab, which is exactly the "hard bottom
+   * and right edge" the first audit reported.
+   *
+   * A radial feather cannot fix it - it eats the middle of the product to reach
+   * the corners. These two ramps fade only the cut sides and leave the top and
+   * right, where the silhouette is genuinely complete, untouched.
+   */
+  .feather-cut {
+    -webkit-mask-image: linear-gradient(to top, transparent 0%, #000 16%),
+      linear-gradient(to right, transparent 0%, #000 13%);
+    mask-image: linear-gradient(to top, transparent 0%, #000 16%),
+      linear-gradient(to right, transparent 0%, #000 13%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
+  .feather-bottom {
+    -webkit-mask-image: linear-gradient(to bottom, #000 76%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 76%, transparent 100%);
+  }
+}
+
+/* Coolant travelling the connection diagrams. A dash offset animation on a
+   stroke is compositor-friendly and needs no JS to keep looping; the period is
+   set inline per card so hovering one speeds only that one up. */
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -38;
   }
 }
 
 @layer utilities {
-  /* Applied only while a scrubbed timeline is live, then removed. */
-  .will-transform {
+  /* Promotes an element to its own compositor layer for the duration of a
+     scrubbed timeline. Paired with `clearProps` on completion wherever the
+     animation is one-shot — a permanently promoted layer costs memory. */
+  .gpu {
     will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   .will-opacity {

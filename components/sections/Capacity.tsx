@@ -1,5 +1,4 @@
 import { Section } from '@/components/layout/Section';
-import { ArcField } from '@/components/ui/ArcField';
 import { Counter } from '@/components/ui/Counter';
 import { DrawnFactory } from '@/components/ui/DrawnFactory';
 import { ParallaxImage } from '@/components/ui/ParallaxImage';
@@ -7,22 +6,19 @@ import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import type { Dictionary } from '@/content';
 
-/** 03 — Production capacity. */
+/** Production capacity — the cinder stage of the thermal arc. */
 export function Capacity({ dict }: { dict: Dictionary }) {
   return (
-    <Section id="capacity" index={dict.capacity.index} tone="white" labelledBy="capacity-title">
-      <ArcField variant="right" />
-
-      <div className="frame py-28 md:py-40">
-        <div className="grid-frame gap-y-16">
+    <Section id="capacity" labelledBy="capacity-title">
+      <div className="frame section-pad">
+        <div className="grid-frame items-center gap-y-12">
           <Reveal className="col-span-4 md:col-span-7">
             <SectionHeading
               id="capacity-title"
-              kicker={dict.capacity.kicker}
               title={dict.capacity.title}
             />
 
-            <p className="kicker mt-14 mb-3 text-slate" data-reveal>
+            <p className="kicker mt-10 mb-2 text-fg" data-reveal>
               {dict.capacity.more}
             </p>
 
@@ -30,15 +26,26 @@ export function Capacity({ dict }: { dict: Dictionary }) {
               <Counter
                 to={dict.capacity.count}
                 locale={dict.locale}
-                className="text-[clamp(3.5rem,12vw,11rem)] leading-[0.85] font-extrabold text-ink"
+                /**
+                 * 9.5vw, not 12.
+                 *
+                 * "5 000 000" is nine tabular glyphs, and the RU locale joins
+                 * them with non-breaking spaces, so the string physically
+                 * cannot wrap. At 12vw it measured 585px inside a 525px column
+                 * at 1024 wide and ran straight under the product image — the
+                 * reported "last zero disappears behind the radiator". 9.5vw
+                 * is the largest setting where the widest string still clears
+                 * the narrowest column across the whole breakpoint range.
+                 */
+                className="text-[clamp(3rem,9.5vw,9rem)] leading-[0.85] font-extrabold text-fg-strong"
                 caption={dict.capacity.unit}
-                captionClassName="mt-4 text-lg text-slate"
+                captionClassName="mt-3 text-lg text-fg"
               />
             </p>
 
-            <div className="mt-16 flex items-start gap-8" data-reveal>
+            <div className="mt-12 flex items-start gap-7" data-reveal>
               <DrawnFactory title={dict.capacity.factoryAlt} className="shrink-0" />
-              <p className="max-w-[28ch] text-sm leading-relaxed text-slate">
+              <p className="max-w-[30ch] text-sm leading-relaxed text-fg">
                 {dict.capacity.standards}
               </p>
             </div>

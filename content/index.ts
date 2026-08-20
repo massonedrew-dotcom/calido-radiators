@@ -23,6 +23,7 @@ export const SECTION_IDS = [
   'systems',
   'connection',
   'range',
+  'scale',
   'colors',
   'warranty',
   'contact',

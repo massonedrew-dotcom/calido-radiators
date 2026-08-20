@@ -1,5 +1,4 @@
 import { Section } from '@/components/layout/Section';
-import { ArcField } from '@/components/ui/ArcField';
 import { Counter } from '@/components/ui/Counter';
 import { ParallaxImage } from '@/components/ui/ParallaxImage';
 import { Reveal } from '@/components/ui/Reveal';
@@ -7,14 +6,13 @@ import { Rule } from '@/components/ui/SectionHeading';
 import { SplitHeading } from '@/components/ui/SplitHeading';
 import type { Dictionary } from '@/content';
 
-/** 02 — Who we are. */
+/** Who we are. Opens the about page, so it keeps the page eyebrow. */
 export function About({ dict }: { dict: Dictionary }) {
   return (
-    <Section id="about" index={dict.about.index} tone="paper" labelledBy="about-title">
-      <ArcField variant="right" />
+    <Section id="about" labelledBy="about-title">
 
-      <div className="frame py-28 md:py-40">
-        <div className="grid-frame items-center gap-y-14">
+      <div className="frame section-pad">
+        <div className="grid-frame items-center gap-y-10">
           <Reveal className="col-span-4 md:col-span-6">
             <p className="kicker mb-6" data-reveal>
               {dict.about.kicker}
@@ -23,7 +21,7 @@ export function About({ dict }: { dict: Dictionary }) {
             <div data-reveal>
               <Rule className="mt-8" />
             </div>
-            <p className="prose-lead mt-8" data-reveal>
+            <p className="prose-lead mt-6" data-reveal>
               {dict.about.lead}
             </p>
 
@@ -34,9 +32,9 @@ export function About({ dict }: { dict: Dictionary }) {
                 locale={dict.locale}
                 duration={1.4}
                 group={false}
-                className="text-[clamp(3rem,7vw,6rem)] leading-none font-extrabold text-ink"
+                className="text-[clamp(3rem,7vw,6rem)] leading-none font-extrabold text-fg-strong"
                 caption={dict.about.sinceSuffix || undefined}
-                captionClassName="text-sm text-slate"
+                captionClassName="text-sm text-fg"
               />
             </p>
           </Reveal>

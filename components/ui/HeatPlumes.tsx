@@ -2,7 +2,7 @@
 
 import { useMemo, useRef } from 'react';
 
-import { gsap, ScrollTrigger } from '@/lib/gsap';
+import { SCRUB, gsap, ScrollTrigger } from '@/lib/gsap';
 import {
   useIdle,
   useIsDesktop,
@@ -61,6 +61,10 @@ export function HeatPlumes({ className = '' }: { className?: string }) {
     const ctx = gsap.context(() => {
       const nodes = gsap.utils.toArray<SVGGElement>('[data-plume]', el);
 
+      // Fourteen paths looping forever: promoted once here rather than left to
+      // the browser to guess, so the field composites instead of repainting.
+      gsap.set(nodes, { willChange: 'transform, opacity', force3D: true });
+
       nodes.forEach((node, i) => {
         const plume = plumes[i];
         if (!plume) return;
@@ -91,7 +95,7 @@ export function HeatPlumes({ className = '' }: { className?: string }) {
         trigger: el,
         start: 'top bottom',
         end: 'bottom top',
-        scrub: true,
+        scrub: SCRUB,
         onUpdate: (self) => {
           const live = Math.round(self.progress * nodes.length);
           nodes.forEach((n, i) => {
@@ -117,8 +121,8 @@ export function HeatPlumes({ className = '' }: { className?: string }) {
     >
       <defs>
         <linearGradient id="plume-fade" x1="0" y1="1" x2="0" y2="0">
-          <stop offset="0%" stopColor="var(--color-red-600)" stopOpacity="0.75" />
-          <stop offset="100%" stopColor="var(--color-red-600)" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--color-red-500)" stopOpacity="0.75" />
+          <stop offset="100%" stopColor="var(--color-red-500)" stopOpacity="0" />
         </linearGradient>
       </defs>
 

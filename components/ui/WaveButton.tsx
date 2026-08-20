@@ -14,11 +14,13 @@ export function WaveButton({
   children,
   type = 'button',
   disabled,
+  autoFocus,
   className = '',
 }: {
   children: ReactNode;
   type?: 'button' | 'submit';
   disabled?: boolean;
+  autoFocus?: boolean;
   className?: string;
 }) {
   const waveRef = useRef<HTMLSpanElement>(null);
@@ -35,13 +37,14 @@ export function WaveButton({
     <button
       type={type}
       disabled={disabled}
+      autoFocus={autoFocus}
       onPointerEnter={seed}
-      className={`group relative isolate overflow-hidden rounded-full bg-red-600 text-white ${className}`}
+      className={`group relative isolate overflow-hidden rounded-full bg-red-500 text-white ${className}`}
     >
       <span
         ref={waveRef}
         aria-hidden
-        className="pointer-events-none absolute -z-10 block size-[280%] -translate-x-1/2 -translate-y-1/2 scale-0 rounded-full bg-[#c2181f] transition-transform duration-600 ease-out group-hover:scale-100 group-focus-visible:scale-100"
+        className="pointer-events-none absolute -z-10 block size-[280%] -translate-x-1/2 -translate-y-1/2 scale-0 rounded-full bg-red-700 transition-transform duration-600 ease-out group-hover:scale-100 group-focus-visible:scale-100"
         style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
       />
       {children}

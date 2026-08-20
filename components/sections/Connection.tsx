@@ -1,72 +1,129 @@
+'use client';
+
+import { useState } from 'react';
+
 import { Section } from '@/components/layout/Section';
-import { DrawnFlow } from '@/components/ui/DrawnFlow';
 import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import type { Dictionary } from '@/content';
 
 /**
- * 10 — Connection methods.
+ * How the radiator is plumbed in.
  *
- * The catalogue prints these as photographs with arrows drawn over them. They
- * are redrawn here as vector: the source is a phone photo of a printed page,
- * and a schematic reads better at card size anyway.
+ * The catalogue prints these as photographs with arrows drawn over them. The
+ * first rebuild redrew them as vector but stopped at outline rectangles with
+ * static arrowheads, which is the "drawn in Paint" the audit describes: no
+ * volume, no motion, and a legend parked several centimetres away from the
+ * thing it explained.
  *
- * Red is the supply leg and indigo the return leg — the one place besides the
- * thermal sections where red carries information rather than emphasis.
+ * What changed:
+ *
+ *   · the radiator is the product's own geometry — a manifold across the top,
+ *     tapered fins with their cast web, threaded ports — not a box;
+ *   · the coolant moves. A dashed stroke runs the path on an infinite
+ *     `stroke-dashoffset` loop, red on the supply leg and indigo on the return,
+ *     and it speeds up when the card is hovered;
+ *   · the legend is on the arrows. "Supply" and "return" are printed at the
+ *     stubs they name, so nothing has to be cross-referenced;
+ *   · the cards have depth instead of a grey box behind them.
+ *
+ * The paragraph about the alloy that used to close this section has moved to
+ * the technology section, which is what it is about.
  */
 
-const FIN_X = [31, 60, 89, 118, 147, 176, 205] as const;
+const FIN_X = [34, 63, 92, 121, 150, 179, 208] as const;
+const FIN_W = 24;
 
-/** Line-art front elevation, drawn once and reused by all three diagrams. */
+/** Front elevation with enough of the real casting to be recognisable. */
 function RadiatorGlyph() {
   return (
-    <g stroke="var(--color-indigo-700)" strokeWidth={1.1} fill="none" opacity={0.55}>
-      {/* upper fin pack, drawn as one mass — dividers here only added noise */}
-      <rect x={26} y={34} width={208} height={22} rx={3} />
-      {FIN_X.map((x) => (
-        <rect key={`f${x}`} x={x} y={56} width={24} height={112} rx={2} />
-      ))}
-      {FIN_X.map((x) => (
-        <rect key={`n${x}`} x={x + 9} y={168} width={6} height={8} rx={1} />
-      ))}
-    </g>
-  );
-}
+    <g aria-hidden>
+      {/* Upper manifold, drawn as a solid so it reads as steel tube. */}
+      <rect
+        x={26}
+        y={34}
+        width={208}
+        height={22}
+        rx={7}
+        fill="var(--color-indigo-700)"
+        opacity={0.16}
+      />
+      <rect
+        x={26}
+        y={34}
+        width={208}
+        height={22}
+        rx={7}
+        fill="none"
+        stroke="var(--color-indigo-700)"
+        strokeWidth={1.2}
+        opacity={0.55}
+      />
 
-/** Short external arrow marking where the pipe enters or leaves. */
-function Stub({ x, y, dir, tone }: { x: number; y: number; dir: 1 | -1; tone: 'supply' | 'return' }) {
-  const color = tone === 'supply' ? 'var(--color-red-600)' : 'var(--color-indigo-700)';
-  const tip = x + dir * 20;
-  return (
-    <g data-stub>
-      <line x1={x} y1={y} x2={tip - dir * 5} y2={y} stroke={color} strokeWidth={1.6} strokeLinecap="round" />
-      <path d={`M${tip} ${y}L${tip - dir * 6} ${y - 4}L${tip - dir * 6} ${y + 4}Z`} fill={color} />
+      {FIN_X.map((x) => (
+        <g key={x}>
+          {/* Fin body, slightly tapered toward the foot the way the section is
+              actually cast. */}
+          <path
+            d={`M${x} 56 H${x + FIN_W} L${x + FIN_W - 2.5} 168 H${x + 2.5} Z`}
+            fill="var(--color-indigo-700)"
+            opacity={0.09}
+          />
+          <path
+            d={`M${x} 56 H${x + FIN_W} L${x + FIN_W - 2.5} 168 H${x + 2.5} Z`}
+            fill="none"
+            stroke="var(--color-indigo-700)"
+            strokeWidth={1}
+            opacity={0.5}
+          />
+          {/* Cast web down the centre of each fin. */}
+          <line
+            x1={x + FIN_W / 2}
+            y1={64}
+            x2={x + FIN_W / 2}
+            y2={160}
+            stroke="var(--color-indigo-700)"
+            strokeWidth={0.8}
+            opacity={0.3}
+          />
+          {/* Foot. */}
+          <rect
+            x={x + 8}
+            y={168}
+            width={8}
+            height={9}
+            rx={1.5}
+            fill="var(--color-indigo-700)"
+            opacity={0.28}
+          />
+        </g>
+      ))}
     </g>
   );
 }
 
 type DiagramId = 'side' | 'bottom' | 'diagonal';
 
+interface Leg {
+  /** Where the pipe meets the frame edge. */
+  readonly x: number;
+  readonly y: number;
+  /** 1 points right, -1 points left. */
+  readonly dir: 1 | -1;
+  readonly tone: 'supply' | 'return';
+}
+
 interface Diagram {
   /** Flow path, starting and ending flush with the radiator body. */
   readonly d: string;
-  /**
-   * Gradient axis in user space. Object-bounding-box units are unusable here:
-   * a straight horizontal path has a zero-height box, and SVG skips gradient
-   * painting entirely in that case — the bottom-connection line vanished.
-   * User space also lets the ramp follow the flow rather than the screen X
-   * axis, so the return leg of the side loop stays indigo.
-   */
-  readonly grad: readonly [number, number, number, number];
-  readonly stubs: readonly { x: number; y: number; dir: 1 | -1; tone: 'supply' | 'return' }[];
+  readonly legs: readonly Leg[];
 }
 
 const DIAGRAMS: Record<DiagramId, Diagram> = {
   // Enters top-left, loops around the far end, returns along the bottom.
   side: {
     d: 'M31 80 H152 A26 26 0 0 1 152 132 H31',
-    grad: [0, 80, 0, 132],
-    stubs: [
+    legs: [
       { x: 11, y: 80, dir: 1, tone: 'supply' },
       { x: 31, y: 132, dir: -1, tone: 'return' },
     ],
@@ -74,8 +131,7 @@ const DIAGRAMS: Record<DiagramId, Diagram> = {
   // Straight through the bottom manifold, in at one end and out at the other.
   bottom: {
     d: 'M31 176 H229',
-    grad: [31, 0, 229, 0],
-    stubs: [
+    legs: [
       { x: 11, y: 176, dir: 1, tone: 'supply' },
       { x: 229, y: 176, dir: 1, tone: 'return' },
     ],
@@ -83,111 +139,161 @@ const DIAGRAMS: Record<DiagramId, Diagram> = {
   // Steps down across the body from top-left to bottom-right.
   diagonal: {
     d: 'M31 80 H100 C124 80 128 150 152 150 H229',
-    grad: [31, 80, 229, 150],
-    stubs: [
+    legs: [
       { x: 11, y: 80, dir: 1, tone: 'supply' },
       { x: 229, y: 150, dir: 1, tone: 'return' },
     ],
   },
 };
 
-function Diagram({ id, title }: { id: DiagramId; title: string }) {
+function Stub({ leg, label }: { leg: Leg; label: string }) {
+  // The arrow is a graphic and keeps the brand red; its printed label is text
+  // at 10px and takes the AA-safe accent instead.
+  const color = leg.tone === 'supply' ? 'var(--color-red-500)' : 'var(--color-indigo-700)';
+  const labelColor = leg.tone === 'supply' ? 'var(--color-accent)' : 'var(--color-indigo-700)';
+  const tip = leg.x + leg.dir * 20;
+  return (
+    <g>
+      <line
+        x1={leg.x}
+        y1={leg.y}
+        x2={tip - leg.dir * 5}
+        y2={leg.y}
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      <path
+        d={`M${tip} ${leg.y}L${tip - leg.dir * 7} ${leg.y - 4.5}L${tip - leg.dir * 7} ${leg.y + 4.5}Z`}
+        fill={color}
+      />
+      {/* The legend, printed where the thing it names actually is. */}
+      <text
+        x={leg.x + leg.dir * 4}
+        y={leg.y - 10}
+        textAnchor={leg.dir === 1 ? 'start' : 'end'}
+        fontSize="10"
+        fontWeight="700"
+        letterSpacing="1.2"
+        fill={labelColor}
+      >
+        {label.toUpperCase()}
+      </text>
+    </g>
+  );
+}
+
+function Diagram({
+  id,
+  title,
+  legend,
+  live,
+}: {
+  id: DiagramId;
+  title: string;
+  legend: { supply: string; return: string };
+  live: boolean;
+}) {
   const gradient = `flow-${id}`;
-  const { d, grad, stubs } = DIAGRAMS[id];
-  const [gx1, gy1, gx2, gy2] = grad;
+  const { d, legs } = DIAGRAMS[id];
 
   return (
     <svg viewBox="0 0 260 200" role="img" aria-label={title} className="h-auto w-full">
       <defs>
+        {/*
+          User-space gradient units, not object-bounding-box.
+
+          A straight horizontal path has a zero-height bounding box and SVG
+          skips gradient painting entirely in that case — which is how the
+          bottom-connection line came to be invisible. User space also lets the
+          ramp follow the flow rather than the screen X axis, so the return leg
+          of the side loop stays indigo.
+        */}
         <linearGradient
           id={gradient}
           gradientUnits="userSpaceOnUse"
-          x1={gx1}
-          y1={gy1}
-          x2={gx2}
-          y2={gy2}
+          x1={legs[0]!.x}
+          y1={legs[0]!.y}
+          x2={legs[1]!.x}
+          y2={legs[1]!.y}
         >
-          <stop offset="0%" stopColor="var(--color-red-600)" />
+          <stop offset="0%" stopColor="var(--color-red-500)" />
+          <stop offset="55%" stopColor="var(--color-red-500)" />
           <stop offset="100%" stopColor="var(--color-indigo-700)" />
         </linearGradient>
       </defs>
 
       <RadiatorGlyph />
 
+      {/* Two strokes on one path: a static bed at low alpha so the route is
+          always readable, and the moving dash on top of it. */}
+      <path d={d} fill="none" stroke={`url(#${gradient})`} strokeWidth={2.4} opacity={0.22} />
       <path
         d={d}
         data-flow
         fill="none"
         stroke={`url(#${gradient})`}
-        strokeWidth={2.2}
+        strokeWidth={2.8}
         strokeLinecap="round"
-        strokeLinejoin="round"
+        strokeDasharray="16 22"
+        style={{
+          animation: `flow-dash ${live ? 0.9 : 2.4}s linear infinite`,
+        }}
       />
 
-      {stubs.map((s) => (
-        <Stub key={`${s.x}-${s.y}`} {...s} />
+      {legs.map((leg) => (
+        <Stub key={`${leg.x}-${leg.y}`} leg={leg} label={legend[leg.tone]} />
       ))}
     </svg>
   );
 }
 
 export function Connection({ dict }: { dict: Dictionary }) {
+  const [hot, setHot] = useState<string | null>(null);
+
   return (
-    <Section id="connection" index={dict.connection.index} tone="white" labelledBy="connection-title">
-      <div className="frame py-28 md:py-40">
+    <Section id="connection" labelledBy="connection-title">
+      <div className="frame section-pad">
         <Reveal className="max-w-3xl">
           <SectionHeading
             id="connection-title"
-            kicker={dict.connection.kicker}
             title={dict.connection.title}
           />
-
-          <ul className="mt-10 flex flex-wrap gap-x-8 gap-y-3" data-reveal>
-            {(
-              [
-                ['supply', dict.connection.legend.supply, 'bg-red-600'],
-                ['return', dict.connection.legend.return, 'bg-indigo-700'],
-              ] as const
-            ).map(([key, label, dot]) => (
-              <li key={key} className="flex items-center gap-2.5 text-[0.8125rem] text-slate">
-                <span aria-hidden className={`size-2 rounded-full ${dot}`} />
-                {label}
-              </li>
-            ))}
-          </ul>
         </Reveal>
 
-        <Reveal className="grid-frame mt-16 gap-y-12" stagger={0.14}>
+        <Reveal className="grid-frame mt-10 gap-y-8" stagger={0.12}>
           {dict.connection.items.map((item) => (
             <figure
               key={item.id}
               data-reveal
               data-connection={item.id}
-              className="col-span-4 border border-line bg-paper p-7"
+              onMouseEnter={() => setHot(item.id)}
+              onMouseLeave={() => setHot(null)}
+              className={[
+                'col-span-4 border bg-surface-card p-6 backdrop-blur-sm transition-[transform,border-color,box-shadow] duration-500',
+                hot === item.id
+                  ? '-translate-y-1.5 border-red-500 shadow-[0_24px_50px_-28px_rgba(13,19,56,0.55)]'
+                  : 'border-hairline',
+              ].join(' ')}
+              style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
             >
-              <figcaption className="mb-6 flex items-baseline gap-3">
-                <span className="tnum text-[0.8125rem] font-extrabold text-indigo-700">
+              <figcaption className="mb-5 flex items-baseline gap-3">
+                <span className="tnum text-[0.8125rem] font-extrabold text-accent">
                   {item.num}
                 </span>
-                <span className="text-sm font-bold tracking-[0.06em] text-ink uppercase">
+                <span className="text-sm font-bold tracking-[0.06em] text-fg-strong uppercase">
                   {item.label}
                 </span>
               </figcaption>
 
-              <DrawnFlow>
-                <Diagram
-                  id={item.id as DiagramId}
-                  title={`${dict.connection.diagramAlt} — ${item.label}`}
-                />
-              </DrawnFlow>
+              <Diagram
+                id={item.id as DiagramId}
+                title={`${dict.connection.diagramAlt}: ${item.label}`}
+                legend={dict.connection.legend}
+                live={hot === item.id}
+              />
             </figure>
           ))}
-        </Reveal>
-
-        <Reveal className="mt-16 md:mt-20">
-          <p className="prose-lead" data-reveal>
-            {dict.connection.body}
-          </p>
         </Reveal>
       </div>
     </Section>

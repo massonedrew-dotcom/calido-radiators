@@ -1,12 +1,19 @@
+import type { Metadata } from 'next';
+
 import { JsonLd } from '@/app/_shared/JsonLd';
-import { Site } from '@/components/Site';
+import { buildMetadata, buildViewport } from '@/app/_shared/root';
+import { Home } from '@/components/pages/Home';
 import { ru } from '@/content/ru';
 
-export default function RuPage() {
+export const metadata: Metadata = buildMetadata(ru, 'ru', 'home');
+
+export const viewport = buildViewport('home');
+
+export default function Page() {
   return (
     <>
       <JsonLd dict={ru} locale="ru" />
-      <Site dict={ru} />
+      <Home dict={ru} />
     </>
   );
 }

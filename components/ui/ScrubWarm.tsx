@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from 'react';
 
-import { gsap } from '@/lib/gsap';
+import { SCRUB, gsap } from '@/lib/gsap';
 import { useIdle, useIsomorphicLayoutEffect, useReducedMotion } from '@/lib/hooks';
 
 /**
@@ -38,7 +38,7 @@ export function ScrubWarm({
           trigger: el,
           start: 'top 78%',
           end: 'bottom 40%',
-          scrub: true,
+          scrub: SCRUB,
         },
       });
 

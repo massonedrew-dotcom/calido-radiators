@@ -3,62 +3,83 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-import { Img } from '@/components/ui/Img';
+import { BrandMark } from '@/components/layout/BrandMark';
 import type { Dictionary } from '@/content';
+import { getPage, PAGES, pagePath, SURFACE, type PageId } from '@/lib/pages';
 import { ScrollTrigger } from '@/lib/gsap';
 
 /**
- * Transparent over the hero, solid white once past it, and hidden while
- * scrolling down so it never covers a pinned section. Keeping it opaque off the
- * hero means it stays legible over the dark sections without any blend tricks.
+ * Header height in px, at the widest breakpoint. Mirrors `lg:h-22` on the bar.
+ *
+ * Used as the offset for the surface-polarity triggers, so the swap happens as
+ * the boundary passes under the bar's own lower edge rather than under the top
+ * of the viewport. Narrow screens run 8px shorter, which is below the threshold
+ * where anyone could see the difference in a crossfade.
  */
-export function Header({ dict }: { dict: Dictionary }) {
-  const [solid, setSolid] = useState(false);
+const BAR = 88;
+
+/**
+ * The header reads the surface underneath it rather than "am I past the hero".
+ *
+ * The old rule was binary — transparent over the hero, opaque white after it —
+ * and it was wrong twice over once the page became one continuous thermal
+ * surface: white-on-white where the story goes light, and a hard white slab
+ * sitting on deep indigo where it goes dark again. Worse, over the hero it had
+ * no backing at all, so the logo and the nav sat directly on the headline and
+ * the two read as one tangled block of type.
+ *
+ * Now there are three states. At the very top of the hero the bar carries a
+ * soft top-down scrim, which separates the marks from the headline without
+ * putting a bar on the first impression. Past that it takes a blurred scrim in
+ * whichever polarity the section under it declares, so it is always legible and
+ * never fights the background. It still retracts on downward scroll, which is
+ * what keeps it clear of the pinned sections.
+ */
+export function Header({ dict, page }: { dict: Dictionary; page: PageId }) {
+  const sections = getPage(page).sections;
+  const [atTop, setAtTop] = useState(true);
+  const [surface, setSurface] = useState<'dark' | 'light'>('dark');
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [active, setActive] = useState<string | null>(null);
   const lastY = useRef(0);
 
+  const locale = dict.locale === 'en' ? 'en' : 'ru';
+  // The nav is derived from the page registry, so a page cannot exist without
+  // being reachable, and cannot be listed twice with different labels.
+  const navItems = PAGES.filter((p) => p.inNav);
+
   useEffect(() => {
-    const hero = document.getElementById('hero');
     const triggers: ScrollTrigger[] = [];
 
-    if (hero) {
-      triggers.push(
-        ScrollTrigger.create({
-          trigger: hero,
-          start: 'bottom top+=80',
-          onEnter: () => setSolid(true),
-          onLeaveBack: () => setSolid(false),
-        }),
-      );
-    }
-
-    dict.nav.items.forEach((item) => {
-      const el = document.getElementById(item.id);
+    // Surface polarity: one trigger per section, measured at the bar's own
+    // lower edge so the swap happens exactly as the boundary passes under it.
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
       if (!el) return;
       triggers.push(
         ScrollTrigger.create({
           trigger: el,
-          start: 'top 50%',
-          end: 'bottom 50%',
-          onToggle: (self) => self.isActive && setActive(item.id),
+          start: `top top+=${BAR}`,
+          end: `bottom top+=${BAR}`,
+          onToggle: (self) => self.isActive && setSurface(SURFACE[id]),
         }),
       );
     });
 
     const onScroll = () => {
       const y = window.scrollY;
+      setAtTop(y < 40);
       setHidden(y > 400 && y > lastY.current);
       lastY.current = y;
     };
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
       triggers.forEach((t) => t.kill());
       window.removeEventListener('scroll', onScroll);
     };
-  }, [dict.nav.items]);
+  }, [sections]);
 
   // Close the sheet on Escape and lock the page behind it.
   useEffect(() => {
@@ -72,58 +93,64 @@ export function Header({ dict }: { dict: Dictionary }) {
     };
   }, [menuOpen]);
 
-  const onLight = solid || menuOpen;
+  const onLight = surface === 'light' && !atTop && !menuOpen;
+
+  const scrim = menuOpen
+    ? 'bg-indigo-900'
+    : atTop
+      ? // No bar over the first impression, just enough of a wash to lift the
+        // marks off the headline.
+        'bg-gradient-to-b from-indigo-900/45 to-transparent'
+      : surface === 'light'
+        ? 'border-b border-line bg-paper/82 backdrop-blur-xl'
+        : 'border-b border-line-dark bg-indigo-900/72 backdrop-blur-xl';
 
   return (
     <>
       <a
-        href="#about"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:rounded-sm focus:bg-white focus:px-4 focus:py-2 focus:text-ink"
+        href={`#${sections[0]}`}
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[70] focus:rounded-sm focus:bg-paper focus:px-4 focus:py-2 focus:text-ink"
       >
         {dict.nav.skip}
       </a>
 
       <header
         className={[
-          'fixed inset-x-0 top-0 z-50 transition-[transform,background-color,border-color] duration-500',
+          // Above the GL stage (z-30), the progress rail (z-40) and the
+          // floating CTA (z-45), so nothing can ever show through it.
+          'fixed inset-x-0 top-0 z-60 transition-[transform,background-color,border-color] duration-500',
           hidden && !menuOpen ? '-translate-y-full' : 'translate-y-0',
-          onLight ? 'border-b border-line bg-white/92 backdrop-blur-md' : 'border-b border-transparent',
+          scrim,
         ].join(' ')}
         style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
       >
-        <div className="frame flex h-18 items-center justify-between gap-6">
-          <Link href="/" aria-label={dict.common.logoAlt} className="shrink-0">
-            <Img
-              id={onLight ? 'brand/logo' : 'brand/logo-white'}
-              alt={dict.common.logoAlt}
-              priority
-              sizes="132px"
-              className="h-7 w-auto"
-            />
+        <div className="frame flex h-20 items-center justify-between gap-6 lg:h-22">
+          <Link href={pagePath('home', locale)} aria-label={dict.common.logoAlt} className="shrink-0">
+            <BrandMark alt={dict.common.logoAlt} priority className="h-9 w-auto lg:h-10" />
           </Link>
 
           <nav aria-label={dict.nav.label} className="hidden lg:block">
             <ul className="flex items-center gap-9">
-              {dict.nav.items.map((item) => (
+              {navItems.map((item) => (
                 <li key={item.id}>
-                  <a
-                    href={`#${item.id}`}
-                    aria-current={active === item.id ? 'true' : undefined}
+                  <Link
+                    href={pagePath(item.id, locale)}
+                    aria-current={page === item.id ? 'page' : undefined}
                     className={[
                       'relative block py-1 text-[0.8125rem] font-medium tracking-[0.02em] transition-colors',
-                      onLight ? 'text-slate hover:text-indigo-700' : 'text-white/80 hover:text-white',
+                      onLight ? 'text-slate hover:text-indigo-700' : 'text-white/85 hover:text-white',
                     ].join(' ')}
                   >
-                    {item.label}
+                    {dict.pages[item.id].nav}
                     <span
                       aria-hidden
                       className={[
-                        'absolute -bottom-0.5 left-0 h-px w-full origin-left bg-red-600 transition-transform duration-500',
-                        active === item.id ? 'scale-x-100' : 'scale-x-0',
+                        'absolute -bottom-0.5 left-0 h-px w-full origin-left bg-red-500 transition-transform duration-500',
+                        page === item.id ? 'scale-x-100' : 'scale-x-0',
                       ].join(' ')}
                       style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
                     />
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -131,7 +158,7 @@ export function Header({ dict }: { dict: Dictionary }) {
 
           <div className="flex items-center gap-3">
             <Link
-              href={dict.alternate.href}
+              href={pagePath(page, locale === 'en' ? 'ru' : 'en')}
               title={dict.alternate.title}
               className={[
                 'rounded-full border px-3 py-1.5 text-[0.6875rem] font-bold tracking-[0.14em] transition-colors',
@@ -143,12 +170,12 @@ export function Header({ dict }: { dict: Dictionary }) {
               {dict.alternate.label}
             </Link>
 
-            <a
-              href="#contact"
-              className="hidden rounded-full bg-red-600 px-5 py-2.5 text-[0.75rem] font-bold tracking-[0.08em] text-white uppercase transition-colors hover:bg-[#c2181f] sm:block"
+            <Link
+              href={pagePath('contact', locale)}
+              className="hidden rounded-full bg-red-500 px-5 py-2.5 text-[0.75rem] font-bold tracking-[0.08em] text-white uppercase transition-colors hover:bg-red-700 sm:block"
             >
               {dict.nav.cta}
-            </a>
+            </Link>
 
             <button
               type="button"
@@ -174,25 +201,36 @@ export function Header({ dict }: { dict: Dictionary }) {
       </header>
 
       {menuOpen ? (
-        <div id="mobile-nav" className="fixed inset-0 z-40 bg-white pt-18 lg:hidden">
+        <div id="mobile-nav" className="on-dark fixed inset-0 z-50 bg-indigo-900 pt-20 lg:hidden">
+          {/*
+            Driven by the same page registry as the desktop nav.
+
+            It used to render `dict.nav.items` as `#section` anchors, which was
+            correct while the site was one scroll and broken the moment it split
+            into six pages: `#range` lives on /models and `#warranty` on /about,
+            so on any other page those links pointed at nothing. The legacy hash
+            map in app/_shared/root.tsx only runs on load, so it could not catch
+            an in-page click either.
+          */}
           <nav aria-label={dict.nav.label} className="frame flex flex-col gap-2 py-8">
-            {dict.nav.items.map((item) => (
-              <a
+            {navItems.map((item) => (
+              <Link
                 key={item.id}
-                href={`#${item.id}`}
+                href={pagePath(item.id, locale)}
+                aria-current={page === item.id ? 'page' : undefined}
                 onClick={() => setMenuOpen(false)}
-                className="border-b border-line py-4 text-2xl font-extrabold tracking-[-0.02em] text-ink uppercase"
+                className="border-b border-line-dark py-4 text-2xl font-extrabold tracking-[-0.02em] text-white uppercase"
               >
-                {item.label}
-              </a>
+                {dict.pages[item.id].nav}
+              </Link>
             ))}
-            <a
-              href="#contact"
+            <Link
+              href={pagePath('contact', locale)}
               onClick={() => setMenuOpen(false)}
-              className="mt-6 rounded-full bg-red-600 px-6 py-4 text-center text-sm font-bold tracking-[0.08em] text-white uppercase"
+              className="mt-6 rounded-full bg-red-500 px-6 py-4 text-center text-sm font-bold tracking-[0.08em] text-white uppercase"
             >
               {dict.nav.cta}
-            </a>
+            </Link>
           </nav>
         </div>
       ) : null}

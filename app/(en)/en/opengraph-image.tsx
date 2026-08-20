@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 
 import { en } from '@/content/en';
 
-export const alt = 'Calido Radiators — heat you can trust';
+export const alt = 'Calido Radiators. Heat you can trust';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -22,7 +22,7 @@ export default function OpengraphImage() {
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: 72,
-          background: 'linear-gradient(135deg, #1E2A63 0%, #2B3A87 62%, #DA1F26 100%)',
+          background: 'linear-gradient(135deg, #0D1338 0%, #22337E 58%, #D91222 100%)',
           color: '#FFFFFF',
           fontFamily: 'sans-serif',
         }}

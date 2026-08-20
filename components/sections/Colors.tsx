@@ -22,20 +22,20 @@ export function Colors({ dict }: { dict: Dictionary }) {
   type Slug = keyof Dictionary['colors']['names'];
 
   return (
-    <Section id="colors" index={dict.colors.index} tone="white" labelledBy="colors-title">
-      <div className="frame py-28 md:py-40">
-        <div className="grid-frame items-center gap-y-16">
+    <Section id="colors" labelledBy="colors-title">
+      <div className="frame section-pad">
+        <div className="grid-frame items-center gap-y-10">
           <Reveal className="col-span-4 md:col-span-6">
-            <SectionHeading id="colors-title" kicker={dict.colors.kicker} title={dict.colors.title} />
-            <p className="prose-lead mt-8" data-reveal>
+            <SectionHeading id="colors-title" title={dict.colors.title} />
+            <p className="prose-lead mt-6" data-reveal>
               {dict.colors.lead}
             </p>
-            <p className="mt-4 max-w-[46ch] text-sm text-slate" data-reveal>
+            <p className="mt-4 max-w-[46ch] text-sm text-fg" data-reveal>
               {dict.colors.note}
             </p>
 
             <fieldset className="mt-12" data-reveal>
-              <legend className="kicker mb-5">{dict.colors.swatchLabel}</legend>
+              <legend className="mb-5 text-[0.8125rem] font-bold text-fg-strong">{dict.colors.swatchLabel}</legend>
               <div className="flex flex-wrap gap-3">
                 {COLORWAYS.map((c) => {
                   const selected = c.slug === active;
@@ -48,8 +48,8 @@ export function Colors({ dict }: { dict: Dictionary }) {
                       className={[
                         'flex items-center gap-2.5 rounded-full border py-1.5 pr-4 pl-1.5 text-[0.8125rem] transition-colors duration-300',
                         selected
-                          ? 'border-indigo-700 text-ink'
-                          : 'border-line text-slate hover:border-indigo-500',
+                          ? 'border-indigo-700 text-fg-strong'
+                          : 'border-hairline text-fg hover:border-indigo-500',
                       ].join(' ')}
                     >
                       <span
@@ -71,7 +71,7 @@ export function Colors({ dict }: { dict: Dictionary }) {
                 <Img
                   key={c.slug}
                   id={c.image}
-                  alt={`${dict.colors.imageAlt} — ${dict.colors.names[c.slug as Slug]}`}
+                  alt={`${dict.colors.imageAlt}: ${dict.colors.names[c.slug as Slug]}`}
                   sizes="(min-width: 768px) 20vw, 60vw"
                   aria-hidden={c.slug !== active}
                   className={[
