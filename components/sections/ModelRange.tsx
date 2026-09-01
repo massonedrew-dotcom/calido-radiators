@@ -158,7 +158,7 @@ function Card({
 
           <a
             href="#contact"
-            className="mt-auto inline-flex w-fit items-center gap-2 self-start rounded-full bg-red-500 px-6 py-3 text-[0.6875rem] font-bold tracking-[0.1em] text-white uppercase transition-colors hover:bg-red-700"
+            className="mt-auto inline-flex w-fit items-center gap-2 self-start bg-red-500 px-6 py-3 text-[0.6875rem] font-bold tracking-[0.1em] text-white uppercase transition-colors hover:bg-red-700"
           >
             {dict.nav.cta}
           </a>
@@ -267,7 +267,7 @@ export function ModelRange({ dict }: { dict: Dictionary }) {
                 type="button"
                 onClick={() => go(-1)}
                 aria-label={dict.range.prev}
-                className="grid size-10 place-items-center rounded-full border border-hairline text-fg-strong transition-colors hover:border-red-500 hover:text-accent"
+                className="grid size-10 place-items-center border border-hairline text-fg-strong transition-colors hover:border-red-500 hover:text-accent"
               >
                 <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.6">
                   <path d="M10 2L4 8l6 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -277,7 +277,7 @@ export function ModelRange({ dict }: { dict: Dictionary }) {
                 type="button"
                 onClick={() => go(1)}
                 aria-label={dict.range.next}
-                className="grid size-10 place-items-center rounded-full border border-hairline text-fg-strong transition-colors hover:border-red-500 hover:text-accent"
+                className="grid size-10 place-items-center border border-hairline text-fg-strong transition-colors hover:border-red-500 hover:text-accent"
               >
                 <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.6">
                   <path d="M6 2l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -323,7 +323,7 @@ export function ModelRange({ dict }: { dict: Dictionary }) {
                   aria-label={model.name}
                   aria-current={i === index ? 'true' : undefined}
                   className={[
-                    'rounded-full border px-4 py-1.5 text-[0.6875rem] font-bold tracking-[0.08em] uppercase transition-colors',
+                    'border px-4 py-1.5 text-[0.6875rem] font-bold tracking-[0.08em] uppercase transition-colors',
                     i === index
                       ? 'border-red-500 text-accent'
                       : 'border-hairline text-fg hover:border-indigo-500',

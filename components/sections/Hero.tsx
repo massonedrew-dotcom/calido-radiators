@@ -1,135 +1,138 @@
-import { GLMelt } from '@/components/gl/GLLayer';
+import Link from 'next/link';
+
 import { Img } from '@/components/ui/Img';
 import { Section } from '@/components/layout/Section';
-import { Rule } from '@/components/ui/SectionHeading';
+import { Plate } from '@/components/ui/Plate';
 import { SplitHeading } from '@/components/ui/SplitHeading';
 import type { Dictionary } from '@/content';
+import { pagePath } from '@/lib/pages';
 
 /**
- * The melt.
+ * The first screen. White.
  *
- * The product is the studio render, masked and grounded with a contact shadow.
+ * The previous version was the thing that went wrong: a full-bleed molten
+ * gradient with a WebGL fragment shader on top of it, white type over the whole
+ * lot, and a studio render of the product floating in the middle. Three
+ * problems, and only the third is about taste.
  *
- * It has been through three versions. The first put the still on an opaque
- * panel at `mix-blend-luminosity`, which produced both a hard bottom-right edge
- * and a pink cast, because luminosity blending takes the *backdrop's* hue and
- * the backdrop is a red melt. The second replaced it with the procedural WebGL
- * section, which was worse: at the top of the hero the shader's heat uniform is
- * at maximum, so the product read as pale pink plastic with no contrast against
- * the orange behind it. The render was the right answer all along; the melt
- * shader stays as the backdrop, which is the job it is actually good at.
+ * · A red first screen makes red the site's background colour rather than its
+ *   accent, and once the visitor has read a whole viewport of it there is
+ *   nothing left for a CTA to be.
+ * · The shader was four octaves of domain-warped noise across the viewport —
+ *   the single most expensive thing on the page, shipped as its own chunk, for
+ *   a texture the visitor scrolls past in two seconds.
+ * · A dark product render on a dark gradient has nowhere to sit. The reason the
+ *   image needed a mask, a contact shadow and an edge feather was that it was
+ *   fighting its own background.
  *
- * It also does not run off the right edge. `ml-auto` on a `w-auto` image
- * inside a fixed-height box pushed a tall render past the column, and the
- * section clipped it; the slot is now centred with its own safe inset.
- *
- * And the visitor can tell whose site this is inside a second: the wordmark is
- * part of the composition, at display scale, above the headline.
- *
- * Four text elements, no more: brand strip, headline, subtext, CTAs. The
- * "Uzbekistan, since 2015" eyebrow that used to sit above the wordmark was the
- * fifth, and a hero carrying both a brand strip and an eyebrow reads as a
- * stack of labels before it reads as a statement. That fact moved to the about
- * page, where it is the subject rather than a garnish.
+ * What replaces it is the arrangement the source template uses and the reason
+ * that template works: white field, one colour plate carrying the eyebrow, the
+ * headline in ink at display scale, and the product photographed against the
+ * white it was lit for. The red is still here — it is the CTA and the rule
+ * under the wordmark, which is 3% of the screen instead of 100% of it.
  */
 export function Hero({ dict }: { dict: Dictionary }) {
+  const locale = dict.locale === 'en' ? 'en' : 'ru';
+
   return (
-    <Section id="hero" labelledBy="hero-title" className="min-h-svh">
-      {/* Fallback beneath the shader: the same molten ramp as thermal layer 0,
-          so if WebGL never initialises nothing about the hero looks unfinished.
-          It is not a section background — the thermal layer is still there
-          underneath — it is the shader's own understudy. */}
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-20"
-        style={{
-          background:
-            'radial-gradient(125% 100% at 50% -6%, var(--ember) 0%, #e8412e 16%, var(--red-500) 32%, #7d0b16 62%, #380810 100%)',
-        }}
-      />
-      <GLMelt heatSelector="#hero" />
+    <Section id="hero" labelledBy="hero-title">
+      <div className="frame grid-frame items-center gap-y-12 pt-14 pb-16 lg:pt-20 lg:pb-24">
+        <div className="col-span-4 md:col-span-6">
+          {/* The eyebrow is the plate — "Uzbekistan, since 2015" as a solid
+              block of indigo rather than as small grey type. */}
+          <Plate tone="indigo" as="p" className="inline-block px-4 py-2">
+            <span className="text-[0.6875rem] font-bold tracking-[0.18em] text-white uppercase">
+              {dict.hero.kicker}
+            </span>
+          </Plate>
 
-      <div className="frame relative flex min-h-svh flex-col justify-end pt-28 pb-14">
-        <div className="grid-frame items-end gap-y-10">
-          <div className="col-span-4 md:col-span-7">
-            {/* The brand, at the size the brand deserves on a first screen.
-                Read as one string by assistive tech; the visual break is
-                typographic only. */}
-            <p
-              className="mb-6 leading-[0.86] font-extrabold tracking-[-0.03em] text-white uppercase"
-              style={{ fontSize: 'clamp(2.25rem, 5.2vw, 5.5rem)' }}
+          {/* The brand, at the size the brand deserves on a first screen. Read
+              as one string by assistive tech; the visual break is typographic. */}
+          <p
+            className="mt-8 leading-[0.86] font-extrabold tracking-[-0.03em] text-ink uppercase"
+            style={{ fontSize: 'clamp(2.5rem, 5.6vw, 5.5rem)' }}
+          >
+            <span className="sr-only">{dict.brand.full}</span>
+            <span aria-hidden className="block">
+              Calido
+            </span>
+            <span
+              aria-hidden
+              className="block font-bold tracking-[0.34em] text-slate"
+              style={{ fontSize: 'clamp(0.6875rem, 1.15vw, 1.25rem)' }}
             >
-              <span className="sr-only">{dict.brand.full}</span>
-              <span aria-hidden className="block">
-                Calido
-              </span>
-              <span
-                aria-hidden
-                className="block font-bold tracking-[0.34em] text-white/70"
-                style={{ fontSize: 'clamp(0.6875rem, 1.15vw, 1.25rem)' }}
-              >
-                Radiators
-              </span>
-            </p>
+              Radiators
+            </span>
+          </p>
 
-            <SplitHeading
-              as="h1"
-              id="hero-title"
-              text={dict.hero.title}
-              className="text-[clamp(1.5rem,2.6vw,2.5rem)] font-bold tracking-[-0.01em] text-white/95"
-              start="top 95%"
-              delay={0.2}
-            />
-            <Rule tone="light" className="mt-6" />
-            <p className="prose-lead mt-6 text-white/85">{dict.hero.lead}</p>
+          <span aria-hidden className="mt-7 block h-1.5 w-24 bg-red-500" />
 
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <a
-                href="#range"
-                className="inline-flex items-center gap-3 rounded-full bg-white px-7 py-4 text-[0.75rem] font-bold tracking-[0.1em] text-indigo-900 uppercase transition-colors hover:bg-indigo-100"
-              >
-                {dict.hero.cta}
-                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <path d="M8 2v12M3 9l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </a>
+          <SplitHeading
+            as="h1"
+            id="hero-title"
+            text={dict.hero.title}
+            className="mt-7 text-[clamp(1.5rem,2.6vw,2.5rem)] font-bold tracking-[-0.01em] text-indigo-700"
+            start="top 95%"
+            delay={0.2}
+          />
 
-              <a
-                href="#contact"
-                className="inline-flex items-center rounded-full border border-white/35 px-6 py-4 text-[0.75rem] font-bold tracking-[0.1em] text-white uppercase transition-colors hover:border-white"
-              >
-                {dict.nav.cta}
-              </a>
-            </div>
+          <p className="prose-lead mt-5">{dict.hero.lead}</p>
+
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            {/*
+              Both destinations are pages, not anchors. They used to be
+              `#range` and `#contact`, which were real section ids while the
+              whole site was one scroll and have pointed at nothing on the home
+              page since it split — "Смотреть модельный ряд" has to reach
+              /models, and it cannot do that with a hash.
+            */}
+            <Link
+              href={pagePath('models', locale)}
+              className="inline-flex items-center justify-center gap-3 bg-red-500 px-8 py-4 text-[0.75rem] font-bold tracking-[0.1em] text-white uppercase transition-colors hover:bg-red-700"
+            >
+              {dict.hero.cta}
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+
+            <Link
+              href={pagePath('contact', locale)}
+              className="inline-flex items-center justify-center border border-indigo-700 px-7 py-4 text-[0.75rem] font-bold tracking-[0.1em] text-indigo-700 uppercase transition-colors hover:bg-indigo-700 hover:text-white"
+            >
+              {dict.nav.cta}
+            </Link>
           </div>
+        </div>
 
-          {/*
-            The studio render, not the procedural mesh.
+        {/*
+          The render, on white, with no mask on it.
 
-            The WebGL section used to sit here and it was the wrong tool: at the
-            top of the hero its heat uniform is at maximum, so the product read
-            as pale pink plastic floating on an orange shader with no contrast
-            against it. The real render is a photographed product in the brand
-            metal finish, and it is the strongest asset this project has. The
-            melt shader stays as the backdrop, which is what it is good at.
-          */}
-          <div className="relative col-span-4 flex h-[46svh] items-end justify-center pr-[2vw] md:col-span-5 md:h-[54svh]">
-            <span aria-hidden className="pointer-events-none absolute inset-x-[8%] bottom-[3%] -z-10 h-[9%]"
-              style={{
-                background:
-                  'radial-gradient(50% 50% at 50% 50%, rgba(6, 9, 26, 0.5) 0%, rgba(6, 9, 26, 0.2) 45%, transparent 78%)',
-                filter: 'blur(6px)',
-              }}
-            />
-            <Img
-              id="hero/silhouette"
-              alt={dict.hero.imageAlt}
-              priority
-              fetchPriority="high"
-              sizes="(min-width: 1024px) 38vw, 88vw"
-              className="feather-cut mx-auto h-full w-auto object-contain"
-            />
-          </div>
+          Every treatment the old hero needed here — the radial feather, the
+          contact shadow, the `feather-cut` ramps — existed to dissolve a studio
+          background into a red gradient. The studio background *is* white, so
+          the correct amount of compositing is none, and the product now has a
+          real edge instead of a fading one.
+
+          The paper plate behind it is what stops a white-on-white product from
+          reading as a floating cutout: it gives the image a box to sit in, set
+          off-centre so the render breaks its top edge.
+        */}
+        <div className="relative col-span-4 md:col-span-6">
+          {/* Offset down and to the right, so it is a rectangle the product
+              sits across rather than a frame around it. The render's
+              background is genuinely transparent — checked, not assumed — so
+              the plate reads through the gaps between the fins. */}
+          <Plate tone="paper" className="absolute inset-y-[12%] right-0 left-[14%]" />
+          <Plate tone="red" className="absolute right-0 bottom-[12%] h-1.5 w-[38%]" />
+          <Img
+            id="hero/silhouette"
+            alt={dict.hero.imageAlt}
+            priority
+            fetchPriority="high"
+            sizes="(min-width: 768px) 46vw, 88vw"
+            className="relative mx-auto h-auto w-full max-w-[32rem] object-contain"
+          />
         </div>
       </div>
     </Section>

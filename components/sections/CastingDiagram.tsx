@@ -179,7 +179,7 @@ export const CastingDiagram = forwardRef<CastingDiagramHandle, { title: string }
           <path
             d={block}
             mask="url(#cast-void)"
-            fill="rgba(9, 13, 40, 0.66)"
+            fill="rgba(9, 13, 40, 0.9)"
             stroke="var(--color-indigo-300)"
             strokeWidth={1.3}
           />
@@ -268,10 +268,10 @@ export const CastingDiagram = forwardRef<CastingDiagramHandle, { title: string }
             together while the halves are apart. */}
         <path
           d={`M${AXIS} 14 V426`}
-          stroke="var(--color-indigo-300)"
+          stroke="var(--color-indigo-500)"
           strokeWidth={1}
           strokeDasharray="16 5 3 5"
-          opacity={0.38}
+          opacity={0.5}
           fill="none"
         />
 
@@ -304,7 +304,7 @@ export const CastingDiagram = forwardRef<CastingDiagramHandle, { title: string }
         <g ref={rightRef}>{half(1)}</g>
 
         {/* Parting-line ticks, marking the plane the halves separate on. */}
-        <g stroke="var(--color-indigo-300)" strokeWidth={1.1} opacity={0.55} fill="none">
+        <g stroke="var(--color-indigo-500)" strokeWidth={1.1} opacity={0.6} fill="none">
           <path d={`M${OUTER_L} 16 V${MOULD_TOP - 2}`} />
           <path d={`M${OUTER_R} 16 V${MOULD_TOP - 2}`} />
           <path d={`M${OUTER_L} 18 H${OUTER_R}`} strokeDasharray="4 5" />

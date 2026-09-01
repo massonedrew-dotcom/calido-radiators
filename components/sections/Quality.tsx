@@ -10,7 +10,7 @@ export function Quality({ dict }: { dict: Dictionary }) {
   return (
     <Section id="quality" labelledBy="quality-title">
 
-      <div className="frame section-pad-seam">
+      <div className="frame section-pad">
         <div className="grid-frame items-center gap-y-10">
           <Reveal className="col-span-4 md:col-span-5">
             <SectionHeading

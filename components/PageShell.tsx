@@ -3,21 +3,27 @@ import type { ReactNode } from 'react';
 import { FloatingCta } from '@/components/layout/FloatingCta';
 import { HashRouting } from '@/components/layout/HashRouting';
 import { Header } from '@/components/layout/Header';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { ProgressRail } from '@/components/layout/ProgressRail';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SmoothScroll } from '@/components/layout/SmoothScroll';
-import { ThermalBackdrop } from '@/components/layout/ThermalBackdrop';
+import { TopBar } from '@/components/layout/TopBar';
 import type { Dictionary } from '@/content';
-import { getPage, type PageId } from '@/lib/pages';
-import { SURFACE_BASE } from '@/lib/thermal';
+import { type PageId } from '@/lib/pages';
+import { PAGE_BASE } from '@/lib/plates';
 
 /**
  * The frame every page renders inside.
  *
- * This replaces the old `Site` component, which composed all fifteen sections
- * into one scroll. The chrome is identical on every page; only the backdrop
- * stack and the progress rail are page-aware, and both take the page id and
- * look the rest up in lib/pages.ts.
+ * Reading down, it is the whole structure of the site: a colour strip, a white
+ * bar, the page's own title plate, the content on white, and a dark footer
+ * plate. Five bands, three of them coloured, and the two largest are white.
+ *
+ * What used to be here and is gone: `ThermalBackdrop`, a fixed six-layer
+ * gradient stack that was the only background on the site and crossfaded
+ * between them on scroll. `main` no longer needs to carry a stand-in base
+ * colour for contrast tooling either — it is opaque white, which is the actual
+ * colour a checker should be measuring against.
  */
 export function PageShell({
   page,
@@ -32,20 +38,13 @@ export function PageShell({
     <>
       <SmoothScroll />
       <HashRouting page={page} />
+      <TopBar dict={dict} />
       <Header dict={dict} page={page} />
       <ProgressRail page={page} label={dict.progress.label} of={dict.progress.of} />
 
-      {/*
-        `main` carries the page's base colour and the thermal stack renders
-        inside it. The stack is `position: fixed` at z-0 within main's stacking
-        context, so it still covers the whole viewport and still sits behind the
-        content - the visitor sees exactly the same thing. The difference is
-        that an automated contrast checker walking up from a section now finds
-        an opaque ancestor in the right colour family instead of falling through
-        to the root. See SURFACE_BASE in lib/thermal.ts.
-      */}
-      <main style={{ backgroundColor: SURFACE_BASE[getPage(page).layers[0]!.surface] }}>
-        <ThermalBackdrop page={page} />
+      <main id="content" style={{ backgroundColor: PAGE_BASE }}>
+        {/* The home page opens on its hero; every other page on its title plate. */}
+        {page === 'home' ? null : <PageHeader page={page} dict={dict} />}
         {children}
       </main>
 

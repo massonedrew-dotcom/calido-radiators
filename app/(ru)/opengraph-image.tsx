@@ -11,12 +11,15 @@ export const contentType = 'image/png';
 export const dynamic = 'force-static';
 
 /**
- * Share card, drawn from the palette rather than from a photograph: the
- * product shots are all portrait, and letterboxing one into 1200x630 looked
- * worse than the brand's own indigo-to-red temperature ramp.
+ * Share card, in the same vocabulary as the site: white field, an indigo strip
+ * along the top, a paper strip along the bottom, the red rule in the middle.
+ * It used to be a diagonal indigo-to-red gradient, which was accurate while the
+ * site was one continuous thermal surface and is now the one place a visitor
+ * would have met that surface at all.
  *
- * No custom font is fetched — a share card is rendered at build time and a
- * missing font request would fail the whole route.
+ * No photograph: the product shots are all portrait, and letterboxing one into
+ * 1200x630 loses the product. No custom font either — a share card is rendered
+ * at build time and a missing font request would fail the whole route.
  */
 export default function OpengraphImage() {
   return new ImageResponse(
@@ -28,45 +31,58 @@ export default function OpengraphImage() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          padding: 72,
-          background: 'linear-gradient(135deg, #0D1338 0%, #22337E 58%, #D91222 100%)',
-          color: '#FFFFFF',
+          background: '#FFFFFF',
+          color: '#0D1020',
           fontFamily: 'sans-serif',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 22, background: '#FFFFFF' }} />
-          <div
-            style={{
-              fontSize: 26,
-              fontWeight: 700,
-              letterSpacing: 6,
-              textTransform: 'uppercase',
-            }}
-          >
-            Calido Radiators
-          </div>
+        {/* The topbar strip, at card scale. */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 20,
+            background: '#22337E',
+            color: '#FFFFFF',
+            padding: '26px 72px',
+            fontSize: 24,
+            fontWeight: 700,
+            letterSpacing: 6,
+            textTransform: 'uppercase',
+          }}
+        >
+          Calido Radiators
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '0 72px' }}>
           <div
             style={{
-              fontSize: 92,
+              fontSize: 88,
               fontWeight: 800,
               lineHeight: 1,
               letterSpacing: -2,
               textTransform: 'uppercase',
+              color: '#0D1020',
             }}
           >
             {ru.brand.tagline}
           </div>
-          <div style={{ width: 96, height: 6, background: '#FFFFFF', marginTop: 36 }} />
-          <div style={{ fontSize: 30, marginTop: 32, opacity: 0.86, maxWidth: 860 }}>
+          <div style={{ width: 96, height: 8, background: '#D91222', marginTop: 34 }} />
+          <div style={{ fontSize: 30, marginTop: 30, color: '#4C5470', maxWidth: 860 }}>
             {ru.hero.lead}
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 48, fontSize: 22, opacity: 0.78 }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 48,
+            fontSize: 22,
+            background: '#EEF0F8',
+            color: '#22337E',
+            padding: '26px 72px',
+          }}
+        >
           <span>{ru.about.sinceLabel} 2015</span>
           <span>5 000 000 {ru.capacity.unit}</span>
           <span>EN · ISO</span>

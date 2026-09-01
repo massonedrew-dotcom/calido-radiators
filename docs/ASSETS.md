@@ -1,5 +1,10 @@
 # Assets to produce outside this repo
 
+> **Superseded in part.** The colour system described below — the thermal
+> gradient stack, the six surfaces, per-page and per-section polarity, and the
+> WebGL hero — was replaced by a white page with brand-colour plates. See
+> [PLATES.md](PLATES.md). The asset pipeline itself is unchanged.
+
 Everything the site currently ships is derived from the Calido story exports in
 `C:/Users/user/Desktop/calodi` by `scripts/prep-assets.mjs` (`npm run prep:assets`).
 That pipeline crops, mattes to alpha, recolours into the brand palette and emits

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { BrandMark } from '@/components/layout/BrandMark';
+import { Plate } from '@/components/ui/Plate';
 import type { Dictionary } from '@/content';
 import { PAGES, pagePath } from '@/lib/pages';
 
@@ -17,7 +18,7 @@ export function SiteFooter({ dict }: { dict: Dictionary }) {
   const locale = dict.locale === 'en' ? 'en' : 'ru';
 
   return (
-    <footer className="on-dark relative z-1 border-t border-hairline bg-indigo-900">
+    <Plate tone="ink" as="footer" className="relative">
       <div className="frame py-14">
         <div className="grid-frame gap-y-10">
           <div className="col-span-4 md:col-span-4">
@@ -57,6 +58,6 @@ export function SiteFooter({ dict }: { dict: Dictionary }) {
           {dict.contact.legal.replace('{year}', String(year))}
         </p>
       </div>
-    </footer>
+    </Plate>
   );
 }

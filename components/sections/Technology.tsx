@@ -179,7 +179,7 @@ export function Technology({ dict }: { dict: Dictionary }) {
                         transitionTimingFunction: 'var(--ease-out-expo)',
                       }}
                     >
-                      <span className="block text-sm font-bold tracking-[0.08em] text-white uppercase">
+                      <span className="block text-sm font-bold tracking-[0.08em] text-fg-strong uppercase">
                         {stage.label}
                       </span>
                       <span className="mt-1 block text-sm text-fg">{stage.text}</span>

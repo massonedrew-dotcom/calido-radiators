@@ -196,14 +196,16 @@ export function Anatomy({ dict }: { dict: Dictionary }) {
             focusable="false"
             className="pointer-events-none absolute inset-0 z-10 hidden h-full w-full lg:block"
             /*
-             * A dark halo under every stroke. The leaders cross a photograph,
-             * not a flat panel, and the hairline colour that reads correctly
-             * over the indigo backdrop disappears the moment a line runs onto a
-             * lit aluminium face - which is exactly where the coating callout
-             * has to point. One drop-shadow on the whole overlay is cheaper
-             * than doubling every line and ring with a backing stroke.
+             * A halo under every stroke, and it is white now rather than
+             * near-black. The leaders run from callouts on the white page onto
+             * a dark blue product, so a single stroke colour cannot serve both
+             * halves of the journey; a light halo behind a dark stroke does.
+             * When the page was deep indigo the polarity was the other way
+             * round and the halo was the dark one. One drop-shadow on the whole
+             * overlay is cheaper than doubling every line and ring with a
+             * backing stroke.
              */
-            style={{ filter: 'drop-shadow(0 0 2.5px rgba(9, 13, 40, 0.9))' }}
+            style={{ filter: 'drop-shadow(0 0 2.5px rgba(255, 255, 255, 0.95))' }}
           >
             {parts.map((part) => {
               const on = active === part.id;
@@ -213,7 +215,7 @@ export function Anatomy({ dict }: { dict: Dictionary }) {
                     data-leader={part.id}
                     points=""
                     fill="none"
-                    stroke={on ? 'var(--color-accent)' : 'var(--color-hairline-strong)'}
+                    stroke={on ? 'var(--color-accent)' : 'var(--color-indigo-500)'}
                     strokeWidth={on ? 1.6 : 1}
                     style={{ opacity: 0, transition: 'stroke 240ms, stroke-width 240ms' }}
                   />
@@ -224,7 +226,7 @@ export function Anatomy({ dict }: { dict: Dictionary }) {
                     data-dot={part.id}
                     r={on ? 7 : 4.5}
                     fill="none"
-                    stroke={on ? 'var(--color-accent)' : 'var(--color-hairline-strong)'}
+                    stroke={on ? 'var(--color-accent)' : 'var(--color-indigo-500)'}
                     strokeWidth={on ? 2 : 1.4}
                     style={{ opacity: 0, transition: 'stroke 240ms, stroke-width 240ms, r 240ms' }}
                   />

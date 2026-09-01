@@ -1,23 +1,26 @@
 import type { ReactNode } from 'react';
 
-import { SURFACE, type SectionId } from '@/lib/pages';
+import type { SectionId } from '@/lib/pages';
 
 /**
  * Semantic wrapper for every scroll section.
  *
- * Sections have no background of their own. The page has exactly one, in
- * ThermalBackdrop, and all this does is set ink polarity from lib/pages.ts so
- * the copy colour and the colour behind it cannot disagree.
+ * Sections are white and carry light ink. Full stop — there is no per-section
+ * polarity lookup any more, because there is no longer a background that
+ * changes underneath one. Where a section needs colour it lays a `Plate` inside
+ * itself, and the plate brings its own ink with it.
  *
- * The seam band that used to live here is gone. It existed to carry a
- * dark-to-light flip mid-page, and pages no longer flip: one polarity per page
- * is the rule now, and the temperature moves between pages instead.
+ * The `data-surface` attribute stays: the header reads it to decide whether it
+ * is currently sitting over white or over a plate that runs to the top of the
+ * section, which is the one case where a section still has something to say
+ * about the chrome above it.
  */
 export function Section({
   id,
   className = '',
   labelledBy,
   clip = true,
+  plated = false,
   children,
 }: {
   id: SectionId;
@@ -28,21 +31,16 @@ export function Section({
    * position-fixed, and an `overflow` ancestor clips it out of view.
    */
   clip?: boolean;
+  /** True where a dark plate reaches this section's own top edge. */
+  plated?: boolean;
   children: ReactNode;
 }) {
-  const dark = SURFACE[id] === 'dark';
-
   return (
     <section
       id={id}
       aria-labelledby={labelledBy}
-      data-surface={dark ? 'dark' : 'light'}
-      className={[
-        'relative isolate',
-        clip ? 'overflow-clip' : '',
-        dark ? 'on-dark' : 'text-fg',
-        className,
-      ]
+      data-surface={plated ? 'dark' : 'light'}
+      className={['relative isolate text-fg', clip ? 'overflow-clip' : '', className]
         .filter(Boolean)
         .join(' ')}
     >

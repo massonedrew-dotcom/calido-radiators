@@ -1,5 +1,10 @@
 # Multi-page restructure + taste-skill pass
 
+> **Superseded in part.** The colour system described below — the thermal
+> gradient stack, the six surfaces, per-page and per-section polarity, and the
+> WebGL hero — was replaced by a white page with brand-colour plates. See
+> [PLATES.md](PLATES.md). The routing table in §2 is still current; its Surface column is not.
+
 Second pass over the site. Two things at once: the single page became six, and
 the `design-taste-frontend` (v2) checklist was applied in redesign-preserve
 mode.

@@ -125,7 +125,7 @@ export function FloatingCta({ dict, page }: { dict: Dictionary; page: PageId }) 
           ref={buttonRef}
           type="button"
           onClick={() => setOpen(true)}
-          className="flex items-center gap-3 rounded-full bg-red-500 px-7 py-4 text-[0.75rem] font-bold tracking-[0.1em] text-white uppercase shadow-[0_12px_40px_-12px_rgba(217,18,34,0.7)] transition-colors hover:bg-red-700"
+          className="flex items-center gap-3 bg-red-500 px-7 py-4 text-[0.75rem] font-bold tracking-[0.1em] text-white uppercase shadow-[0_12px_40px_-12px_rgba(217,18,34,0.7)] transition-colors hover:bg-red-700"
         >
           <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.6">
             <path d="M2.6 3.4h10.8v7.6H6.2L3.4 13.4V11H2.6z" strokeLinejoin="round" />
@@ -136,7 +136,7 @@ export function FloatingCta({ dict, page }: { dict: Dictionary; page: PageId }) 
 
       <div
         className={[
-          'fixed inset-x-0 bottom-0 z-45 border-t border-line-dark bg-indigo-900/92 p-3 backdrop-blur-xl transition-transform duration-500 lg:hidden',
+          'fixed inset-x-0 bottom-0 z-45 border-t border-line-dark bg-indigo-900 p-3 transition-transform duration-500 lg:hidden',
           shown ? 'translate-y-0' : 'translate-y-full',
         ].join(' ')}
         style={{
@@ -147,7 +147,7 @@ export function FloatingCta({ dict, page }: { dict: Dictionary; page: PageId }) 
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="w-full rounded-full bg-red-500 px-6 py-3.5 text-[0.75rem] font-bold tracking-[0.1em] text-white uppercase"
+          className="w-full bg-red-500 px-6 py-3.5 text-[0.75rem] font-bold tracking-[0.1em] text-white uppercase"
         >
           {dict.nav.cta}
         </button>
@@ -169,12 +169,12 @@ export function FloatingCta({ dict, page }: { dict: Dictionary; page: PageId }) 
             aria-labelledby="cta-dialog-title"
             // `overscroll-contain`: without it, scrolling past the end of the
             // dialog scrolls the page behind it.
-            className="on-dark relative max-h-[92svh] w-full max-w-lg overflow-y-auto overscroll-contain border border-hairline bg-indigo-900 p-8 shadow-2xl sm:rounded-lg"
+            className="on-dark relative max-h-[92svh] w-full max-w-lg overflow-y-auto overscroll-contain bg-indigo-900 p-8 shadow-2xl"
           >
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="absolute top-5 right-5 grid size-9 place-items-center rounded-full border border-line-dark text-white transition-colors hover:border-white"
+              className="absolute top-5 right-5 grid size-9 place-items-center border border-line-dark text-white transition-colors hover:border-white"
             >
               <span className="sr-only">{dict.common.close}</span>
               <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.5">

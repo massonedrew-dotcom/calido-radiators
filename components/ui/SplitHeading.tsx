@@ -77,7 +77,18 @@ export function SplitHeading({
         stagger: 0.03,
         scrollTrigger: { trigger: el, start, once: true },
         onComplete: () => {
-          gsap.set(split!.chars, { clearProps: 'willChange,filter' });
+          // Removed from the inline style directly rather than through
+          // `clearProps: 'willChange,filter'`, which was leaving
+          // `will-change: transform, opacity, filter` on every character — two
+          // dozen permanently promoted compositor layers per heading, for an
+          // animation that runs once. Verified in the browser: the tween had
+          // finished (opacity 1, filter none) and the hint was still there.
+          // `chars` is typed as `Element[]`; SplitText only ever produces
+          // HTMLElements here, and the cast is what gives us `.style`.
+          for (const char of split!.chars as HTMLElement[]) {
+            char.style.removeProperty('will-change');
+            char.style.removeProperty('filter');
+          }
         },
       });
       }, el);

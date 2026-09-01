@@ -82,6 +82,17 @@ export const en: Dictionary = {
 
   progress: { label: 'Reading progress', of: 'of' },
 
+  topbar: {
+    label: 'The plant in brief',
+    items: [
+      { label: 'Production', value: 'Uzbekistan, since 2015' },
+      { label: 'Capacity', value: '5,000,000 sections a year' },
+      { label: 'Warranty', value: '10 years' },
+    ],
+  },
+
+  breadcrumb: { label: 'Breadcrumb' },
+
   hero: {
     index: '01',
     kicker: 'Uzbekistan · since 2015',

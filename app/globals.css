@@ -14,15 +14,14 @@
        scrolls sideways. `clip` rather than `hidden` because `hidden` would make
        this a scroll container and break every ScrollTrigger pin on the page. */
     overflow-x: clip;
-    /* Behind the fixed thermal stack, so overscroll and the moment before
-       hydration are the page floor rather than white. */
-    background-color: var(--color-indigo-900);
+    /* The page floor, and the colour of an overscroll bounce. There is exactly
+       one for the whole site now — every trace of colour is a plate laid on top
+       of this. See lib/plates.ts. */
+    background-color: #ffffff;
   }
 
   body {
-    /* Deliberately transparent: ThermalBackdrop is the only background on the
-       site and it has to be what shows through every section. */
-    background-color: transparent;
+    background-color: #ffffff;
     color: var(--color-fg);
     font-family: var(--font-sans);
     font-weight: 400;
@@ -30,12 +29,6 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: clip;
-  }
-
-  /* Everything the visitor reads sits above the backdrop stack (z-0). */
-  main {
-    position: relative;
-    z-index: 1;
   }
 
   h1,
@@ -59,7 +52,8 @@
     border-radius: 2px;
   }
 
-  /* Dark sections invert the focus ring so it stays visible on indigo-900. */
+  /* Inside a dark plate the indigo ring is invisible; white is the only value
+     that clears both indigo-700 and red-500. */
   .on-dark :focus-visible {
     outline-color: var(--color-white);
   }
@@ -80,11 +74,11 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* A deep link to #warranty must not land under the fixed header, and this
+  /* A deep link to #warranty must not land under the sticky header, and this
      has to work with JavaScript off — HashRouting only covers the scripted
-     path. 6.5rem clears the 88px bar with a little air. */
+     path. 6rem clears the 80px bar with a little air. */
   section[id] {
-    scroll-margin-top: 6.5rem;
+    scroll-margin-top: 6rem;
   }
 
   img,
@@ -147,40 +141,12 @@
   }
 
   /* ---------------------------------------------------------------------
-     Clearance under the fixed bar for the first thing on a page.
-
-     The bar is 88px at `lg` and 80px below it, while the rhythm minimum above
-     is 4.5rem = 72px — so on narrow screens, and at exactly 1024 where 8vw is
-     still only 82px, the opening kicker rendered underneath it. Topping the
-     first section up to 7rem gives the bar 24px of air at its tallest, and
-     `max()` leaves wide viewports, where 8vw already clears it, untouched.
-
-     Same layer as `.section-pad` on purpose. In `@layer base` this lost to it
-     outright — layer order decides before specificity is even consulted, and
-     `components` comes after `base` — so the rule silently did nothing.
-
-     `:first-of-type`, not `:first-child`: ThermalBackdrop is the first child
-     of `main` and would make the selector match nothing.
-
-     Raising the rhythm class rather than padding the section means this
-     applies to exactly the sections that use the standard rhythm, and cannot
-     stack on top of one that sizes its own opening. The pinned technology
-     panel is the one that does, and it handles the bar itself.
-
-     The hero is excluded on purpose. It is deliberately full-bleed under a
-     transparent bar, and that is the one composition the clearance would
-     break rather than fix.
+     The bar is `position: sticky` now rather than fixed, so it occupies its own
+     row in the flow and the first section on a page starts underneath it by
+     construction. The block that used to live here topped that section up to
+     7rem to clear a bar that was painted over it; there is nothing left to
+     clear.
      --------------------------------------------------------------------- */
-  main > section:first-of-type:not(#hero) > .section-pad,
-  main > section:first-of-type:not(#hero) > .section-pad-t {
-    padding-block-start: max(clamp(4.5rem, 8vw, 8rem), 7rem);
-  }
-
-  /* Sections that open with a seam band need their content clear of it. */
-  .section-pad-seam {
-    padding-block-start: calc(var(--seam-h) + clamp(2.5rem, 5vw, 5rem));
-    padding-block-end: clamp(4.5rem, 8vw, 8rem);
-  }
 
   /* Section headline scale, per the type spec. */
   .display {
@@ -198,9 +164,8 @@
     letter-spacing: 0.18em;
     line-height: 1;
     text-transform: uppercase;
-    /* Not a literal indigo-700: at 12px bold that is 1.6:1 on the deep-indigo
-       half of the page. `--mark` is the same indigo on the light surface and
-       indigo-100 on the dark one. */
+    /* `--mark` rather than a literal indigo-700, so the same class is legible
+       inside a dark plate — there it resolves to indigo-100. */
     color: var(--color-mark);
   }
 
@@ -218,7 +183,7 @@
 
   /* The token half of `.on-dark` lives unlayered in styles/tokens.css — see the
      note there. What stays here is everything that is an ordinary declaration
-     rather than a custom property. */
+     rather than a custom property. Applied by `Plate`, never by a section. */
   .on-dark {
     color: var(--color-fg);
   }
@@ -236,10 +201,14 @@
 
 @layer components {
   /* ---------------------------------------------------------------------
-     Product stills sit on a live gradient now, not on a flat card, so any
-     residual studio background around a cutout would read as a rectangle.
-     Feathering the outer few percent dissolves the edge into whatever the
-     backdrop happens to be at that scroll position.
+     Edge feathering, kept for the two crops that genuinely need it.
+
+     It existed because product stills sat on a live gradient and any residual
+     studio background read as a rectangle against it. On white that is no
+     longer true for a cleanly cut render — the studio background and the page
+     are the same colour — so the hero dropped its mask entirely. What still
+     uses these are the crops that cut *through* the product, where the mask is
+     hiding a truncation rather than a background.
      --------------------------------------------------------------------- */
   .feather-edges {
     -webkit-mask-image: radial-gradient(115% 108% at 50% 50%, #000 62%, transparent 100%);

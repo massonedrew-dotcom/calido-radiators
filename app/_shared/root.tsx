@@ -3,8 +3,8 @@ import { Manrope } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import type { Dictionary, Locale } from '@/content';
-import { PAGE_OF_SECTION, PAGE_POLARITY, pagePath, SECTION_IDS, type PageId } from '@/lib/pages';
-import { CHROME_COLOR } from '@/lib/thermal';
+import { PAGE_OF_SECTION, pagePath, SECTION_IDS, type PageId } from '@/lib/pages';
+import { CHROME_COLOR } from '@/lib/plates';
 
 /**
  * Legacy `/#section` redirect, as a blocking inline script.
@@ -65,29 +65,26 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:30
 import { withBasePath } from '@/lib/basePath';
 
 /**
- * Viewport for one page, keyed to the page's polarity.
+ * Viewport for one page.
  *
- * `colorScheme` and `themeColor` were global and dark, which is right for four
- * of the six pages and wrong for the two light ones: on `/models` and
- * `/installation` the browser painted its own UI dark on a lit page - native
- * `<select>` menus, autofill dropdowns and the mobile address bar all came out
- * near-black against #e6eaf7.
+ * This used to be keyed to the page's thermal polarity, because four of the six
+ * pages sat on a dark gradient and two on a light one, and a global `dark`
+ * answer painted native `<select>` menus, autofill dropdowns and the mobile
+ * address bar near-black on the lit pages.
  *
- * They are declared per page rather than in CSS on purpose. A `:root`
- * declaration wins over the meta tag, and `<html>` is rendered by the locale
- * layout, which does not know which page it is wrapping - so CSS could only
- * ever state one answer for the whole site. The meta tag is in the static HTML
- * of each page, so it is right before the first paint, with no hydration and no
- * class to thread through the tree.
+ * With a single white floor site-wide there is one answer for every page, so
+ * the parameter survives only to keep the call sites in the six `page.tsx`
+ * files unchanged.
  *
- * Polarity comes from the page registry, so a page that changes surface takes
- * its browser chrome with it.
+ * It stays in the meta tag rather than moving to CSS. A `:root` declaration
+ * wins over the tag, and `<html>` is rendered by the locale layout, so putting
+ * it in CSS would make it unreachable from a page again the moment any page
+ * needs its own answer.
  */
-export function buildViewport(page: PageId = 'home'): Viewport {
-  const polarity = PAGE_POLARITY[page];
+export function buildViewport(_page: PageId = 'home'): Viewport {
   return {
-    themeColor: CHROME_COLOR[polarity],
-    colorScheme: polarity,
+    themeColor: CHROME_COLOR,
+    colorScheme: 'light',
   };
 }
 

@@ -43,7 +43,7 @@ export function Warranty({ dict }: { dict: Dictionary }) {
   return (
     <Section id="warranty" labelledBy="warranty-title">
 
-      <div className="frame section-pad-seam pb-0">
+      <div className="frame section-pad pb-0">
         <Reveal className="max-w-2xl">
           <SectionHeading
             id="warranty-title"
@@ -70,9 +70,14 @@ export function Warranty({ dict }: { dict: Dictionary }) {
           {dict.warranty.number}
         </p>
 
+        {/* Red, not indigo-300. The word overlaps the giant ink numeral and
+            used to be the light rung of the ramp because the page behind it was
+            deep indigo; on white that is 2.3:1 and reads as a printing fault.
+            Red at display weight is 4.2:1 on white — over AA for large text —
+            and it is the one place on this page the accent appears. */}
         <span
           aria-hidden
-          className="absolute top-[8%] left-[38%] z-20 text-[clamp(2rem,7vw,5.5rem)] leading-none font-extrabold tracking-[-0.02em] text-indigo-300 uppercase"
+          className="absolute top-[8%] left-[38%] z-20 text-[clamp(2rem,7vw,5.5rem)] leading-none font-extrabold tracking-[-0.02em] text-red-500 uppercase"
           data-warranty-word
         >
           {dict.warranty.years}

@@ -92,19 +92,19 @@
   --color-fg-mute: #5c6480;
   --color-hairline: rgba(34, 51, 126, 0.14);
   --color-hairline-strong: rgba(34, 51, 126, 0.28);
-  /* Panels sit on a live gradient, so they are translucent tint rather than a
-     flat fill — an opaque card would punch a hole in the thermal surface. */
-  --color-surface-card: rgba(255, 255, 255, 0.5);
+  /* Panels used to be translucent white, because they sat on a live gradient
+     and an opaque fill would have punched a hole in it. The page is flat white
+     now, so a 50%-white panel is invisible: the tint is opaque and one step off
+     the floor. */
+  --color-surface-card: #f4f6fc;
   /* Line-art ink: the drawn checks, the factory glyph, the rule under a
      heading, the kicker. */
   --color-mark: #22337e;
   /* Red as *text*, which is a different requirement from red as a fill.
-     Measured against the real thermal layers (not against axe's fallback —
-     see the note in the README), the brand red is 4.07:1 on the lightest stop
-     of the light surface and 2.4:1 on deep indigo. Both are under AA for the
-     11-13px bold sizes the accent is actually used at, so the accent moves one
-     rung along the ramp in each direction: 4.97:1 light, 5.02:1 dark.
-     `bg-red-500` with white text is unaffected and stays the brand red. */
+     The brand red is 4.24:1 on white, which is under AA for the 11-13px bold
+     sizes the accent is actually used at, so red-as-text moves one rung down
+     the ramp: #C00F1E is 5.19:1 on white. `bg-red-500` with white text is a
+     different measurement and is unaffected — that stays the brand red. */
   --color-accent: #c00f1e;
 
   /* --- hairlines ----------------------------------------------------------
@@ -149,27 +149,28 @@
   /* Side gutter: 6vw, clamped so ultrawide screens keep the frame centred. */
   --frame-pad: clamp(1.25rem, 6vw, 7.5rem);
 
-  /* Height of the seam band that carries a surface polarity flip. Referenced
-     by ToneSeam and by the sections that sit either side of one. */
-  --seam-h: clamp(6rem, 12vw, 11rem);
-
-  /* `color-scheme` is deliberately NOT set here. It used to be `dark`, which is
-     the wrong answer on the two light pages, and a `:root` declaration beats
-     the `<meta name="color-scheme">` tag - so stating it in CSS would have made
-     the per-page value unreachable. It now comes from `buildViewport` in
-     app/_shared/root.tsx, keyed to the page's polarity. */
+  /* `color-scheme` is deliberately NOT set here. A `:root` declaration beats
+     the `<meta name="color-scheme">` tag, so stating it in CSS would make the
+     per-page value unreachable the moment any page needs its own. It comes from
+     `buildViewport` in app/_shared/root.tsx. */
 }
 
 /* ---------------------------------------------------------------------------
    Dark-surface bindings.
 
+   Every one of these is now scoped to a plate rather than to half the site: the
+   page is white, and `.on-dark` rides on the coloured rectangles laid on it
+   (see components/ui/Plate.tsx). What it does is unchanged — inside a plate,
+   `text-fg-strong` resolves to white instead of ink, so a heading is written the
+   same way whether or not it is sitting on colour.
+
    Unlayered, deliberately, and the reason is a cascade rule that is easy to get
    wrong: an unlayered declaration beats *any* layered one, whatever the
    specificity. With `:root` unlayered above and this block inside
-   `@layer components`, `:root`'s light-surface values won everywhere — so every
-   section on the dark half of the page was painting ink #0D1020 on indigo
-   #0D1338, a contrast ratio of 1.04. Keeping both sides of the switch in the
-   same (unlayered) origin is what makes the override actually apply.
+   `@layer components`, `:root`'s values won everywhere — so everything on a dark
+   plate was painting ink #0D1020 on indigo #0D1338, a contrast ratio of 1.04.
+   Keeping both sides of the switch in the same (unlayered) origin is what makes
+   the override actually apply.
    --------------------------------------------------------------------------- */
 .on-dark {
   --color-fg-strong: #ffffff;

@@ -74,7 +74,7 @@ function RadiatorGlyph() {
             fill="none"
             stroke="var(--color-indigo-700)"
             strokeWidth={1}
-            opacity={0.5}
+            opacity={0.68}
           />
           {/* Cast web down the centre of each fin. */}
           <line
@@ -84,7 +84,7 @@ function RadiatorGlyph() {
             y2={160}
             stroke="var(--color-indigo-700)"
             strokeWidth={0.8}
-            opacity={0.3}
+            opacity={0.42}
           />
           {/* Foot. */}
           <rect
@@ -94,7 +94,7 @@ function RadiatorGlyph() {
             height={9}
             rx={1.5}
             fill="var(--color-indigo-700)"
-            opacity={0.28}
+            opacity={0.4}
           />
         </g>
       ))}

@@ -124,7 +124,7 @@ export function Scale({ dict }: { dict: Dictionary }) {
                     onClick={() => setMetric(m.id as MetricId)}
                     aria-pressed={on}
                     className={[
-                      'rounded-full border px-5 py-2 text-[0.75rem] font-bold tracking-[0.08em] uppercase transition-colors',
+                      'border px-5 py-2 text-[0.75rem] font-bold tracking-[0.08em] uppercase transition-colors',
                       on
                         ? 'border-red-500 bg-red-500 text-white'
                         : 'border-hairline text-fg hover:border-indigo-500 hover:text-indigo-700',

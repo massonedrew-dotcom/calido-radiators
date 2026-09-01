@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { getPage, SURFACE, type PageId } from '@/lib/pages';
+import { getPage, type PageId } from '@/lib/pages';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -33,7 +33,6 @@ export function ProgressRail({
   const total = sections.length;
   const fillRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
-  const [dark, setDark] = useState(true);
 
   useEffect(() => {
     const fill = fillRef.current;
@@ -44,9 +43,9 @@ export function ProgressRail({
 
     triggers.push(
       ScrollTrigger.create({
-        // `maxScroll` rather than the root element's box — see the note in
-        // ThermalBackdrop. Measured against the box, the fill reached 100%
-        // while a fifth of the page was still below the fold.
+        // `maxScroll` rather than the root element's box: measured against the
+        // box, the fill reached 100% while a fifth of the page was still below
+        // the fold.
         start: 0,
         end: () => ScrollTrigger.maxScroll(window),
         onUpdate: (self) => setFill(self.progress),
@@ -63,13 +62,7 @@ export function ProgressRail({
           trigger: el,
           start: 'top 55%',
           end: 'bottom 55%',
-          onToggle: (self) => {
-            if (!self.isActive) return;
-            setActive(index);
-            // The rail sits on the page background, not on a card, so it has to
-            // invert with the thermal surface or it vanishes on one half of it.
-            setDark(SURFACE[id] === 'dark');
-          },
+          onToggle: (self) => self.isActive && setActive(index),
         }),
       );
     });
@@ -84,10 +77,10 @@ export function ProgressRail({
       aria-label={label}
       className="pointer-events-none fixed top-1/2 right-[max(1rem,3vw)] z-40 hidden -translate-y-1/2 lg:block"
     >
-      <div
-        className="relative h-[34vh] max-h-72 w-px transition-colors duration-500"
-        style={{ backgroundColor: dark ? 'var(--color-line-dark)' : 'var(--color-line)' }}
-      >
+      {/* One track colour now: the page behind it is white everywhere, so the
+          light/dark swap this used to run against the thermal surface has
+          nothing left to swap between. */}
+      <div className="relative h-[34vh] max-h-72 w-px bg-line">
         <div
           ref={fillRef}
           className="absolute inset-x-0 top-0 h-full origin-top scale-y-0 bg-red-500"

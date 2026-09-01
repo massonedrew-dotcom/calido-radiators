@@ -21,45 +21,58 @@ export default function OpengraphImage() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          padding: 72,
-          background: 'linear-gradient(135deg, #0D1338 0%, #22337E 58%, #D91222 100%)',
-          color: '#FFFFFF',
+          background: '#FFFFFF',
+          color: '#0D1020',
           fontFamily: 'sans-serif',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 22, background: '#FFFFFF' }} />
-          <div
-            style={{
-              fontSize: 26,
-              fontWeight: 700,
-              letterSpacing: 6,
-              textTransform: 'uppercase',
-            }}
-          >
-            Calido Radiators
-          </div>
+        {/* The topbar strip, at card scale. */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 20,
+            background: '#22337E',
+            color: '#FFFFFF',
+            padding: '26px 72px',
+            fontSize: 24,
+            fontWeight: 700,
+            letterSpacing: 6,
+            textTransform: 'uppercase',
+          }}
+        >
+          Calido Radiators
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '0 72px' }}>
           <div
             style={{
-              fontSize: 92,
+              fontSize: 88,
               fontWeight: 800,
               lineHeight: 1,
               letterSpacing: -2,
               textTransform: 'uppercase',
+              color: '#0D1020',
             }}
           >
             {en.brand.tagline}
           </div>
-          <div style={{ width: 96, height: 6, background: '#FFFFFF', marginTop: 36 }} />
-          <div style={{ fontSize: 30, marginTop: 32, opacity: 0.86, maxWidth: 860 }}>
+          <div style={{ width: 96, height: 8, background: '#D91222', marginTop: 34 }} />
+          <div style={{ fontSize: 30, marginTop: 30, color: '#4C5470', maxWidth: 860 }}>
             {en.hero.lead}
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 48, fontSize: 22, opacity: 0.78 }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 48,
+            fontSize: 22,
+            background: '#EEF0F8',
+            color: '#22337E',
+            padding: '26px 72px',
+          }}
+        >
           <span>{en.about.sinceLabel} 2015</span>
           <span>5,000,000 {en.capacity.unit}</span>
           <span>EN · ISO</span>

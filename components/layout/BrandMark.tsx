@@ -24,7 +24,7 @@ export function BrandMark({
   alt,
   priority = false,
   className = 'h-8 w-auto',
-  plateClassName = 'rounded-lg px-3.5 py-2.5',
+  plateClassName = 'px-3.5 py-2.5',
 }: {
   alt: string;
   priority?: boolean;

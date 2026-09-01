@@ -28,15 +28,19 @@ export function Contact({ dict }: { dict: Dictionary }) {
               {dict.contact.summary.map((s) => (
                 <div key={s.label}>
                   <dt className="kicker mb-2">{s.label}</dt>
-                  <dd className="text-sm text-white">{s.value}</dd>
+                  <dd className="text-sm text-fg-strong">{s.value}</dd>
                 </div>
               ))}
             </dl>
           </div>
 
+          {/* The page is white, so the form is the light variant. It was
+              `dark` for as long as the contact page sat on the closing indigo
+              surface; the floating CTA's copy of it is still dark, because that
+              one renders inside an indigo dialog. */}
           <RequestForm
             dict={dict}
-            tone="dark"
+            tone="light"
             className="col-span-4 md:col-span-6 md:col-start-7"
           />
         </div>

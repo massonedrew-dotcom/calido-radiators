@@ -39,7 +39,7 @@ export function WaveButton({
       disabled={disabled}
       autoFocus={autoFocus}
       onPointerEnter={seed}
-      className={`group relative isolate overflow-hidden rounded-full bg-red-500 text-white ${className}`}
+      className={`group relative isolate overflow-hidden bg-red-500 text-white ${className}`}
     >
       <span
         ref={waveRef}

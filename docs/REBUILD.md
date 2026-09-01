@@ -1,5 +1,10 @@
 # Rebuild — what changed, and where the compromises are
 
+> **Superseded in part.** The colour system described below — the thermal
+> gradient stack, the six surfaces, per-page and per-section polarity, and the
+> WebGL hero — was replaced by a white page with brand-colour plates. See
+> [PLATES.md](PLATES.md). Everything about typography, layout, motion and the token ramps still holds.
+
 Blocks A–J of the revision brief. Verified at 1440 × 900, 1920 × 1080,
 768 × 1024 and 390 × 844.
 

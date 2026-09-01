@@ -34,19 +34,33 @@ export function Overview({ dict }: { dict: Dictionary }) {
           {lead ? (
             <Link
               href={pagePath(lead.id, locale)}
-              className="group relative flex min-h-[18rem] flex-col justify-end overflow-clip border border-hairline p-8 transition-colors hover:border-accent md:col-span-5 md:min-h-[26rem]"
+              className="on-dark group relative flex min-h-[18rem] flex-col justify-end overflow-clip bg-indigo-700 p-8 md:col-span-5 md:min-h-[26rem]"
             >
+              {/*
+                The lead cell is a plate, which is what makes this grid read as
+                one large block of colour beside three white rows rather than as
+                four cards of equal weight.
+
+                It used to be a bordered white cell with a red-to-maroon radial
+                gradient washed across it — a treatment that existed because the
+                page behind it was a dark molten surface and the cell needed to
+                be *darker* than that to register. On white the same gradient
+                came out as a pale pink smear with no edge.
+
+                Hover moves the plate one rung down the indigo ramp instead of
+                scaling a background layer: a transform on a full-bleed gradient
+                inside an `overflow-clip` box was repainting the whole cell.
+              */}
               <span
                 aria-hidden
-                className="pointer-events-none absolute inset-0 -z-10 opacity-70 transition-transform duration-700 group-hover:scale-[1.04]"
-                style={{
-                  background:
-                    'radial-gradient(120% 90% at 70% 10%, rgba(217, 18, 34, 0.32) 0%, rgba(78, 8, 15, 0.35) 45%, transparent 78%)',
-                  transitionTimingFunction: 'var(--ease-out-expo)',
-                }}
+                className="pointer-events-none absolute inset-0 -z-10 bg-indigo-900 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
               />
-              <h3 className="text-[clamp(1.5rem,2.6vw,2.25rem)]">{dict.pages[lead.id].nav}</h3>
-              <p className="mt-3 max-w-[30ch] text-sm text-fg">{dict.pages[lead.id].card}</p>
+              <span aria-hidden className="mb-6 block h-1.5 w-14 bg-red-500" />
+              <h3 className="text-[clamp(1.5rem,2.6vw,2.25rem)] text-white">
+                {dict.pages[lead.id].nav}
+              </h3>
+              <p className="mt-3 max-w-[30ch] text-sm text-white/75">{dict.pages[lead.id].card}</p>
             </Link>
           ) : null}
 

@@ -85,6 +85,21 @@ export const ru = {
 
   progress: { label: 'Прогресс просмотра', of: 'из' },
 
+  // The strip above the header — the three facts that answer "who is this" before
+  // the visitor has scrolled anything. Deliberately not the phone and address of
+  // the source template: those are still `уточняется` in `contact.details`, and a
+  // topbar whose every plate reads "TBD" is worse than no topbar.
+  topbar: {
+    label: 'Коротко о заводе',
+    items: [
+      { label: 'Производство', value: 'Узбекистан, с 2015 года' },
+      { label: 'Мощность', value: '5 000 000 секций в год' },
+      { label: 'Гарантия', value: '10 лет' },
+    ],
+  },
+
+  breadcrumb: { label: 'Хлебные крошки' },
+
   hero: {
     index: '01',
     kicker: 'Узбекистан · с 2015 года',

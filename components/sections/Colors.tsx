@@ -46,7 +46,7 @@ export function Colors({ dict }: { dict: Dictionary }) {
                       onClick={() => setActive(c.slug)}
                       aria-pressed={selected}
                       className={[
-                        'flex items-center gap-2.5 rounded-full border py-1.5 pr-4 pl-1.5 text-[0.8125rem] transition-colors duration-300',
+                        'flex items-center gap-2.5 border py-1.5 pr-4 pl-1.5 text-[0.8125rem] transition-colors duration-300',
                         selected
                           ? 'border-indigo-700 text-fg-strong'
                           : 'border-hairline text-fg hover:border-indigo-500',
