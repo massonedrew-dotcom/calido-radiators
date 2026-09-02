@@ -62,26 +62,36 @@ export function Warranty({ dict }: { dict: Dictionary }) {
         ref={ref}
         className="frame relative mt-8 flex min-h-[60vh] items-end overflow-clip md:min-h-[76vh]"
       >
-        <p
-          aria-hidden
-          className="tnum relative z-0 -mb-[0.08em] text-[clamp(9rem,34vw,26rem)] leading-[0.72] font-extrabold text-fg-strong"
-          data-warranty-number
-        >
-          {dict.warranty.number}
-        </p>
+        {/* Number and word are one lockup.
 
-        {/* Red, not indigo-300. The word overlaps the giant ink numeral and
-            used to be the light rung of the ramp because the page behind it was
-            deep indigo; on white that is 2.3:1 and reads as a printing fault.
-            Red at display weight is 4.2:1 on white — over AA for large text —
-            and it is the one place on this page the accent appears. */}
-        <span
-          aria-hidden
-          className="absolute top-[8%] left-[38%] z-20 text-[clamp(2rem,7vw,5.5rem)] leading-none font-extrabold tracking-[-0.02em] text-red-500 uppercase"
-          data-warranty-word
-        >
-          {dict.warranty.years}
-        </span>
+            The word used to be positioned against this section — `top-[8%]
+            left-[38%]` of a 76vh block — while the numeral sat on the block's
+            bottom edge under `items-end`. At that height the two ended up most
+            of a viewport apart, so "10" and "ЛЕТ" never read as one figure.
+            Anchoring the word to the numeral's own box is what makes the
+            overlap hold at every width. */}
+        <div className="relative z-0">
+          <p
+            aria-hidden
+            className="tnum -mb-[0.08em] text-[clamp(9rem,34vw,26rem)] leading-[0.72] font-extrabold text-fg-strong"
+            data-warranty-number
+          >
+            {dict.warranty.number}
+          </p>
+
+          {/* Red, not indigo-300. The word overlaps the giant ink numeral and
+              used to be the light rung of the ramp because the page behind it
+              was deep indigo; on white that is 2.3:1 and reads as a printing
+              fault. Red at display weight is 4.2:1 on white — over AA for large
+              text — and it is the one place on this page the accent appears. */}
+          <span
+            aria-hidden
+            className="absolute top-[3%] left-[57%] z-20 text-[clamp(2rem,7vw,5.5rem)] leading-none font-extrabold tracking-[-0.02em] text-red-500 uppercase"
+            data-warranty-word
+          >
+            {dict.warranty.years}
+          </span>
+        </div>
 
         <Img
           id="sections/warranty-mustard"

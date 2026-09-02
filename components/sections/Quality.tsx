@@ -1,6 +1,7 @@
 import { Section } from '@/components/layout/Section';
 import { DrawnCheck } from '@/components/ui/DrawnCheck';
 import { Img } from '@/components/ui/Img';
+import { Plate } from '@/components/ui/Plate';
 import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import type { Dictionary } from '@/content';
@@ -25,13 +26,20 @@ export function Quality({ dict }: { dict: Dictionary }) {
             </p>
           </Reveal>
 
+          {/* The render is a white radiator shot on white. On the old thermal
+              background it separated for free; on the white page it dissolved
+              into the floor. A paper plate is the surface it needs — and the
+              feather is what keeps the shot's own white ground from reading as
+              a rectangle inside that plate. */}
           <div className="col-span-4 md:col-span-3 md:col-start-6">
-            <Img
-              id="hero/white"
-              alt={dict.quality.imageAlt}
-              sizes="(min-width: 768px) 24vw, 100vw"
-              className="feather-edges mx-auto h-auto w-full max-w-xs"
-            />
+            <Plate tone="paper" className="px-6 py-8">
+              <Img
+                id="hero/white"
+                alt={dict.quality.imageAlt}
+                sizes="(min-width: 768px) 24vw, 100vw"
+                className="feather-edges mx-auto h-auto w-full max-w-xs"
+              />
+            </Plate>
           </div>
 
           <Reveal className="col-span-4 md:col-span-3 md:col-start-10" stagger={0.12}>

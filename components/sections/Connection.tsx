@@ -152,6 +152,11 @@ function Stub({ leg, label }: { leg: Leg; label: string }) {
   const color = leg.tone === 'supply' ? 'var(--color-red-500)' : 'var(--color-indigo-700)';
   const labelColor = leg.tone === 'supply' ? 'var(--color-accent)' : 'var(--color-indigo-700)';
   const tip = leg.x + leg.dir * 20;
+  // The label is set inward, never past the edge its stub sits on. The root
+  // SVG clips to the viewBox, so anchoring a word as long as ОБРАТКА outward
+  // ran it off the side of the card — cut to "АТКА" on the side diagram and to
+  // "ОБРА" on the other two.
+  const atRightEdge = leg.x > 130;
   return (
     <g>
       <line
@@ -169,9 +174,9 @@ function Stub({ leg, label }: { leg: Leg; label: string }) {
       />
       {/* The legend, printed where the thing it names actually is. */}
       <text
-        x={leg.x + leg.dir * 4}
+        x={atRightEdge ? tip : leg.x + 4}
         y={leg.y - 10}
-        textAnchor={leg.dir === 1 ? 'start' : 'end'}
+        textAnchor={atRightEdge ? 'end' : 'start'}
         fontSize="10"
         fontWeight="700"
         letterSpacing="1.2"

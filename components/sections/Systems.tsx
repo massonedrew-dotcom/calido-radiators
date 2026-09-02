@@ -1,5 +1,4 @@
 import { Section } from '@/components/layout/Section';
-import { HeatPlumes } from '@/components/ui/HeatPlumes';
 import { Img } from '@/components/ui/Img';
 import { Reveal } from '@/components/ui/Reveal';
 import { ScrubWarm } from '@/components/ui/ScrubWarm';
@@ -14,18 +13,23 @@ import type { Dictionary } from '@/content';
  * background and the left third of the picture was a blown-out window carrying
  * no information at all.
  *
- * The fix is in two places. The crop moved (see `sections/interior` in
- * scripts/prep-assets.mjs): the window is gone and the radiator is the
- * compositional centre. And the product is now separated from the room in CSS
- * rather than hoped to separate on its own —
+ * The crop moved (see `sections/interior` in scripts/prep-assets.mjs): the
+ * window is gone and the radiator is the compositional centre. That alone is
+ * the separation, and it is now the only one.
  *
- *   · the room plate is desaturated, softened and darkened, so it reads as
- *     context;
- *   · a second, tighter plate of the product itself is laid back over it at
- *     full contrast, feathered at the edges so it dissolves into the treated
- *     room rather than sitting in it as a rectangle;
- *   · a warm key pools on the product and convection rises off it, which is
- *     both the separation and the point of the section.
+ * What was here before and why it went: the room was pushed back with an
+ * inline `saturate(0.28) blur(3px) brightness(0.62)` and a second, tighter
+ * plate of the product was laid back over it at full contrast, feathered so it
+ * would dissolve into the treated room. It never dissolved. ScrubWarm animates
+ * the `filter` property of `[data-warm-photo]` wholesale — `saturate(0.94)
+ * brightness(1)` to `saturate(1.06) brightness(1.03)` — so the moment the
+ * section was scrolled the blur and the darkening were overwritten out of
+ * existence. The room came back to full contrast under a full-contrast inset,
+ * and the composite read as exactly the pasted rectangle the feather was there
+ * to prevent.
+ *
+ * One photograph, one vignette. The warm scrub stays because it is a filter on
+ * that single image and no longer fights anything.
  */
 export function Systems({ dict }: { dict: Dictionary }) {
   return (
@@ -64,52 +68,24 @@ export function Systems({ dict }: { dict: Dictionary }) {
 
           <div className="col-span-4 md:col-span-6 md:col-start-7">
             <ScrubWarm className="relative overflow-clip rounded-sm">
-              {/* Room: pushed back. */}
               <Img
                 id="sections/interior"
                 alt={dict.systems.imageAlt}
                 sizes="(min-width: 768px) 48vw, 100vw"
                 data-warm-photo
                 className="h-[46svh] w-full object-cover md:h-[58svh]"
-                style={{ filter: 'saturate(0.28) blur(3px) brightness(0.62)' }}
               />
 
-              {/* Vignette, so the eye is pulled to the middle before anything
-                  else happens. */}
+              {/* A vignette and nothing else: it gives the frame a centre
+                  without putting a second edge anywhere inside it. */}
               <span
                 aria-hidden
                 className="pointer-events-none absolute inset-0"
                 style={{
                   background:
-                    'radial-gradient(58% 62% at 52% 52%, transparent 30%, rgba(7, 11, 32, 0.34) 72%, rgba(7, 11, 32, 0.62) 100%)',
+                    'radial-gradient(66% 70% at 52% 52%, transparent 44%, rgba(7, 11, 32, 0.24) 100%)',
                 }}
               />
-
-              {/* Product: brought forward, at full contrast, edges feathered so
-                  the inset never reads as a pasted rectangle. */}
-              <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                <div className="relative w-[64%] max-w-[26rem]">
-                  <span
-                    aria-hidden
-                    className="absolute -inset-[18%] -z-10"
-                    style={{
-                      background:
-                        'radial-gradient(50% 50% at 50% 52%, rgba(255, 122, 60, 0.34) 0%, rgba(217, 18, 34, 0.16) 42%, transparent 76%)',
-                    }}
-                  />
-                  <Img
-                    id="sections/interior-product"
-                    alt=""
-                    aria-hidden
-                    sizes="(min-width: 768px) 30vw, 62vw"
-                    className="feather-edges h-auto w-full"
-                    style={{ filter: 'saturate(1.05) contrast(1.08) brightness(1.06)' }}
-                  />
-                </div>
-              </div>
-
-              {/* Convection off the fins — the product visibly working. */}
-              <HeatPlumes className="pointer-events-none absolute inset-x-[30%] top-[6%] bottom-[38%] h-[56%] w-[40%]" />
 
               <div
                 aria-hidden
@@ -117,7 +93,7 @@ export function Systems({ dict }: { dict: Dictionary }) {
                 className="pointer-events-none absolute inset-0 opacity-0"
                 style={{
                   background:
-                    'radial-gradient(46% 52% at 50% 50%, rgba(255, 122, 60, 0.4) 0%, transparent 72%)',
+                    'radial-gradient(46% 52% at 50% 50%, rgba(255, 122, 60, 0.22) 0%, transparent 72%)',
                   mixBlendMode: 'screen',
                 }}
               />
