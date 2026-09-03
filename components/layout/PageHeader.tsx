@@ -33,12 +33,20 @@ export function PageHeader({ page, dict }: { page: PageId; dict: Dictionary }) {
       <div className="frame flex flex-col justify-end pt-14 pb-12 lg:pt-20 lg:pb-16">
         <nav aria-label={dict.breadcrumb.label}>
           <ol className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.6875rem] font-bold tracking-[0.16em] uppercase">
+            {/*
+              Near-white rather than the 60% these carried before. At 11px and
+              0.16em tracking, uppercase breadcrumbs are already the smallest
+              type on the band; taking a third of the contrast out of them on
+              top of that was what made them read as a stain on the plate
+              rather than as a control. The current page stays pure white, so
+              the pair still separates "where you can go" from "where you are".
+            */}
             <li>
-              <Link href={pagePath('home', locale)} className="text-white/60 transition-colors hover:text-white">
+              <Link href={pagePath('home', locale)} className="text-white/85 transition-colors hover:text-white">
                 {dict.pages.home.nav}
               </Link>
             </li>
-            <li aria-hidden className="text-white/35">
+            <li aria-hidden className="text-white/45">
               /
             </li>
             <li aria-current="page" className="text-white">
@@ -49,7 +57,17 @@ export function PageHeader({ page, dict }: { page: PageId; dict: Dictionary }) {
 
         <h1 className="mt-5 text-[clamp(2.25rem,5.2vw,4.25rem)] text-white">{copy.title}</h1>
 
-        <p className="prose-lead mt-4 text-white/80">{copy.description}</p>
+        {/*
+          One step up from `prose-lead`'s own clamp, overridden here rather than
+          in the utility: `prose-lead` is body copy in a dozen sections and this
+          is the only place it has a 68px heading directly above it, where the
+          default size read as a caption instead of a standfirst. Kept well
+          under the h1 so the hierarchy is unchanged - roughly a third of it at
+          every viewport. The `max-width: 52ch` from `prose-lead` still applies.
+        */}
+        <p className="prose-lead mt-4 text-[clamp(1.09375rem,1.35vw,1.3125rem)] leading-[1.6] text-white/90">
+          {copy.description}
+        </p>
       </div>
 
       {/*
@@ -57,8 +75,13 @@ export function PageHeader({ page, dict }: { page: PageId; dict: Dictionary }) {
         colour. It is what makes the band read as laid on the white rather than
         as the top of the page: a hard colour-to-white transition with a second
         colour in the seam reads as a stacked object, which is the impression
-        the whole system is after. Red on the indigo pages, indigo on the one
-        page whose plate is already red — a red rule on red is not a seam.
+        the whole system is after.
+
+        The rule is always the colour the plate is not, because a seam in the
+        plate's own colour is not a seam. No page takes the red plate any more
+        (see `plate` in lib/pages.ts), so in practice this is red on indigo
+        everywhere; the branch stays because the invariant is "not the plate
+        colour", not "always red".
       */}
       <span
         aria-hidden
