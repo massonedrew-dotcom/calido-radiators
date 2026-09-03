@@ -20,6 +20,7 @@ export function SectionHeading({
   tone = 'indigo',
   size = 'display-sm',
   id,
+  className = '',
   children,
 }: {
   kicker?: string;
@@ -27,10 +28,12 @@ export function SectionHeading({
   tone?: Tone;
   size?: 'display' | 'display-sm';
   id?: string;
+  /** Alignment, mostly. The contact page centres its heading; nothing else does. */
+  className?: string;
   children?: ReactNode;
 }) {
   return (
-    <header className="flex flex-col">
+    <header className={`flex flex-col ${className}`}>
       {kicker ? <p className="kicker mb-5">{kicker}</p> : null}
       <h2 id={id} className={size} data-reveal="heading">
         {title}

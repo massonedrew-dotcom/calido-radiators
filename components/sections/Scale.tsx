@@ -64,9 +64,10 @@ export function Scale({ dict }: { dict: Dictionary }) {
 
   const meta = dict.scale.metrics.find((m) => m.id === metric) ?? dict.scale.metrics[0]!;
 
-  const { bars, ticks, top } = useMemo(() => {
+  const { bars, ticks, top, spread } = useMemo(() => {
     const values = MODELS.map((m) => valueOf(metric, m));
     const max = Math.max(...values);
+    const min = Math.min(...values);
     // Headroom so the tallest bar is not flush with the frame, and so the
     // labels above the bars have somewhere to sit.
     const ceiling = max * 1.12;
@@ -80,6 +81,7 @@ export function Scale({ dict }: { dict: Dictionary }) {
     return {
       top: ceiling,
       ticks: marks,
+      spread: max - min,
       bars: MODELS.map((model, i) => {
         const value = values[i]!;
         const h = (value / ceiling) * (BASE_Y - PAD_T);
@@ -101,14 +103,25 @@ export function Scale({ dict }: { dict: Dictionary }) {
       ? v.toFixed(2).replace('.', dict.locale === 'ru' ? ',' : '.')
       : String(Math.round(v));
 
+  /**
+   * Figure and unit as one token, for the places that are running text.
+   *
+   * The space is non-breaking: "составляет 161 мм" is one quantity, and a line
+   * break between the number and the unit reads as two.
+   */
+  const withUnit = (v: number) => `${fmt(v)} ${meta.unit}`;
+
   return (
     <Section id="scale" labelledBy="scale-title">
       <div className="frame section-pad">
         <div className="grid-frame items-end gap-y-8">
           <Reveal className="col-span-4 md:col-span-6">
             <SectionHeading id="scale-title" title={dict.scale.title} />
+            {/* The spread is recomputed per metric off the same values the
+                bars are drawn from, so the sentence cannot drift from the
+                chart underneath it the way a hardcoded "161 мм" did. */}
             <p className="prose-lead mt-6" data-reveal>
-              {dict.scale.note}
+              {dict.scale.note} {meta.gap.replace('{value}', withUnit(spread))}
             </p>
           </Reveal>
 
@@ -252,6 +265,18 @@ export function Scale({ dict }: { dict: Dictionary }) {
                     ))}
                   </g>
 
+                  {/*
+                    Figure and unit in one <text>, so `textAnchor="middle"`
+                    centres the pair over the bar rather than centring the
+                    number and letting the unit push it off-centre.
+
+                    The unit is deliberately the quieter half: smaller, lighter
+                    weight, muted fill. It is there to say which scale is being
+                    read, and the moment it competes with the figure the chart
+                    is harder to scan than it was with no unit at all. On the
+                    hovered bar it takes the accent too, at reduced opacity, so
+                    the pair still reads as one label.
+                  */}
                   <text
                     x={centre}
                     y={y - 12}
@@ -263,6 +288,15 @@ export function Scale({ dict }: { dict: Dictionary }) {
                     style={{ transition: 'fill 240ms' }}
                   >
                     {fmt(value)}
+                    <tspan
+                      dx="4"
+                      fontSize="11"
+                      fontWeight="600"
+                      fill={on ? 'var(--color-accent)' : 'var(--color-fg-mute)'}
+                      fillOpacity={on ? 0.65 : 1}
+                    >
+                      {meta.unit}
+                    </tspan>
                   </text>
 
                   <text

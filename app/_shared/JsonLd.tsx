@@ -1,6 +1,7 @@
 import { SITE_URL } from '@/app/_shared/root';
 import type { Dictionary, Locale } from '@/content';
 import { ASSETS } from '@/content/assets.generated';
+import { CONTACTS } from '@/content/contacts';
 import { formatSpec, MODELS } from '@/content/models';
 import { withBasePath } from '@/lib/basePath';
 
@@ -31,6 +32,24 @@ function organization(dict: Dictionary) {
       '@type': 'PostalAddress',
       addressCountry: 'UZ',
     },
+    // From content/contacts.ts, and omitted rather than emitted empty: a
+    // `telephone: ""` in structured data is worse than no property, because a
+    // consumer will render it.
+    ...(CONTACTS.phone.value ? { telephone: CONTACTS.phone.value } : {}),
+    ...(CONTACTS.email.value ? { email: CONTACTS.email.value } : {}),
+    ...(CONTACTS.phone.value
+      ? {
+          contactPoint: {
+            '@type': 'ContactPoint',
+            contactType: 'sales',
+            telephone: CONTACTS.phone.value,
+            ...(CONTACTS.email.value ? { email: CONTACTS.email.value } : {}),
+            areaServed: 'UZ',
+            availableLanguage: ['ru', 'en'],
+          },
+        }
+      : {}),
+    ...(CONTACTS.location.value ? { hasMap: CONTACTS.location.value } : {}),
     makesOffer: MODELS.map((m) => ({
       '@type': 'Offer',
       itemOffered: { '@id': abs(`/#product-${m.slug}`) },

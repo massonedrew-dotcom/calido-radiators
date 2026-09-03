@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { BrandMark } from '@/components/layout/BrandMark';
 import { Plate } from '@/components/ui/Plate';
+import { CONTACTS, FOOTER_CHANNELS, contactHref, opensInNewTab } from '@/content/contacts';
 import type { Dictionary } from '@/content';
 import { PAGES, pagePath } from '@/lib/pages';
 
@@ -41,14 +42,45 @@ export function SiteFooter({ dict }: { dict: Dictionary }) {
             </ul>
           </nav>
 
+          {/* Values from content/contacts.ts, labels from the dictionary — the
+              footer and the direct-contact block under the form now print the
+              same number because they read the same object, rather than because
+              someone remembered to update both. Phone and e-mail are links
+              here too: a footer number that cannot be tapped is a number that
+              gets copied by hand. */}
           <div className="col-span-2 md:col-span-4">
             <ul className="flex flex-col gap-2">
-              {dict.contact.details.items.map((item) => (
-                <li key={item.label} className="flex gap-3 text-sm text-fg">
-                  <span className="w-20 shrink-0 text-fg-mute">{item.label}</span>
-                  <span>{item.value}</span>
-                </li>
-              ))}
+              {FOOTER_CHANNELS.map((id) => {
+                const href = contactHref(id);
+                const label = dict.contact.details.labels[id];
+                // Location has a label and no printable value, so repeating the
+                // label as the link text would print "Локация  Локация".
+                const value =
+                  CONTACTS[id].display || (id === 'location' ? dict.contact.details.mapText : label);
+                // Same rule as the block under the form: no value in the data
+                // source, no row. A footer line reading "уточняется" is a
+                // promise the site cannot keep.
+                if (!CONTACTS[id].value) return null;
+                return (
+                  <li key={id} className="flex gap-3 text-sm text-fg">
+                    <span className="w-20 shrink-0 text-fg-mute">{label}</span>
+                    {href ? (
+                      <a
+                        href={href}
+                        {...(opensInNewTab(id)
+                          ? { target: '_blank', rel: 'noopener noreferrer' }
+                          : {})}
+                        aria-label={id === 'location' ? dict.contact.direct.locationAria : undefined}
+                        className="break-words transition-colors hover:text-white"
+                      >
+                        {value}
+                      </a>
+                    ) : (
+                      <span>{value}</span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
