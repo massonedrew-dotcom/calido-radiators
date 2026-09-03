@@ -29,7 +29,7 @@ export const ASSETS = {
   'sections/benefits-indigo': { src: '/sections/benefits-indigo.webp', width: 1080, height: 1120, widths: [480, 720, 1080] },
   'sections/capacity-green': { src: '/sections/capacity-green.webp', width: 780, height: 1117, widths: [480, 720, 780] },
   'sections/final-white': { src: '/sections/final-white.webp', width: 1052, height: 1118, widths: [480, 720, 1052] },
-  'sections/heat-silver': { src: '/sections/heat-silver.webp', width: 1073, height: 1167, widths: [480, 720, 1073] },
+  'sections/heat-silver': { src: '/sections/heat-silver.webp', width: 1073, height: 1185, widths: [480, 720, 1073] },
   'sections/interior': { src: '/sections/interior.webp', width: 650, height: 560, widths: [480, 650] },
   'sections/interior-product': { src: '/sections/interior-product.webp', width: 524, height: 516, widths: [480, 524] },
   'sections/qc-white': { src: '/sections/qc-white.webp', width: 570, height: 1455, widths: [480, 570] },

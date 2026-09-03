@@ -26,7 +26,9 @@ const SWATCH_CROP = [730, 80, 350, 790];
  * @type {{
  *   id:string, src:string, crop:[number,number,number,number],
  *   alpha?:boolean, flat?:boolean, png?:boolean, widths?:number[],
- *   knockout?:string, strictMatte?:boolean, tint?:'metal'|'indigo'|'red', tintMix?:number
+ *   knockout?:string, strictMatte?:boolean, matteFloor?:number,
+ *   evenLighting?:number, tintBand?:[number,number],
+ *   tint?:'metal'|'indigo'|'red', tintMix?:number
  * }[]}
  *
  * Two rules run through this table now.
@@ -52,7 +54,40 @@ const JOBS = [
   { id: 'sections/capacity-green', src: '3 (33).png', crop: [300, 780, 780, 1140], alpha: true, png: true, tint: 'metal' },
   { id: 'sections/tech-indigo', src: '4 (12).png', crop: [0, 725, 1080, 1195], alpha: true, png: true, tint: 'indigo' },
   { id: 'sections/qc-white', src: '5 (10).png', crop: [470, 465, 570, 1455], alpha: true, png: true, tint: 'metal', strictMatte: true },
-  { id: 'sections/heat-silver', src: '6 (9).png', crop: [0, 735, 1080, 1185], alpha: true, png: true, tint: 'red', tintMix: 0.9 },
+  // The only source in the set that is not lit flat, and it went wrong twice
+  // over.
+  //
+  // Its softbox falls off from bottom to top, so the raw crop runs mean
+  // luminance 46 at the head and 113 at the foot — and normalising *that*
+  // across the red ramp put the top on near-black and the bottom on near-white,
+  // which is why the section read as two different radiators welded together.
+  // `evenLighting` divides the drift out before the ramp sees it; `tintBand`
+  // keeps specular off the white end of the ramp, where it stopped looking
+  // painted at all.
+  //
+  // The white faces on the front fins were never a colour problem: the product
+  // runs out of frame at the bottom, so the similarity growth had a path from
+  // the border straight up the brightest faces and matted them to alpha 0.
+  // They were holes showing the page through, which is also why they stayed
+  // white while everything around them turned red.
+  //
+  // Measured, this source separates cleanly — backdrop 246-251, fin faces
+  // 218-235, a trough between them. What let the growth cross it is the default
+  // floor, `bg - 46` = 204, which sits well inside the product. `matteFloor`
+  // names the trough instead. `strictMatte` also plugs the holes, but by
+  // thresholding at `bg - 3` = 247, which then keeps most of the 246-251
+  // backdrop: 82% coverage and a red wedge of retained studio down the right.
+  {
+    id: 'sections/heat-silver',
+    src: '6 (9).png',
+    crop: [0, 735, 1080, 1185],
+    alpha: true,
+    png: true,
+    tint: 'red',
+    matteFloor: 240,
+    evenLighting: 0.85,
+    tintBand: [0.1, 0.82],
+  },
   { id: 'sections/benefits-indigo', src: '7 (10).png', crop: [0, 800, 1080, 1120], alpha: true, png: true, tint: 'indigo' },
   // ---- 09 interior -------------------------------------------------------
   // Recropped off the original full-bleed window. The source frames a white
@@ -163,6 +198,70 @@ const RAMPS = {
 };
 
 /**
+ * One separable box pass, horizontal then vertical, on a running sum.
+ *
+ * O(pixels) regardless of kernel width, which is the whole point: the radius
+ * that separates *lighting* from *geometry* is a fifth of the frame, and a
+ * naive convolution at that width is not worth waiting for.
+ */
+function boxBlur(src, w, h, r) {
+  const win = 2 * r + 1;
+  const tmp = new Float32Array(w * h);
+  const out = new Float32Array(w * h);
+  const clampX = (x) => (x < 0 ? 0 : x > w - 1 ? w - 1 : x);
+  const clampY = (y) => (y < 0 ? 0 : y > h - 1 ? h - 1 : y);
+
+  for (let y = 0; y < h; y++) {
+    const row = y * w;
+    let sum = 0;
+    for (let x = -r; x <= r; x++) sum += src[row + clampX(x)];
+    for (let x = 0; x < w; x++) {
+      tmp[row + x] = sum / win;
+      sum -= src[row + clampX(x - r)];
+      sum += src[row + clampX(x + r + 1)];
+    }
+  }
+  for (let x = 0; x < w; x++) {
+    let sum = 0;
+    for (let y = -r; y <= r; y++) sum += tmp[clampY(y) * w + x];
+    for (let y = 0; y < h; y++) {
+      out[y * w + x] = sum / win;
+      sum -= tmp[clampY(y - r) * w + x];
+      sum += tmp[clampY(y + r + 1) * w + x];
+    }
+  }
+  return out;
+}
+
+/**
+ * The lighting gradient a render was lit with, separated from the shapes in it.
+ *
+ * Three box passes approximate a Gaussian closely enough at this radius. What
+ * actually matters is the alpha weighting: a plain blur near the silhouette
+ * averages the product against transparent pixels reading as zero, so the field
+ * dives at every edge and correcting by it then blows those edges out. Blurring
+ * `lum * a` and `a` separately and dividing gives the mean over the *covered*
+ * pixels only, so the field stays flat right up to the cut.
+ */
+function lightingField(lum, data, w, h, radius) {
+  const n = w * h;
+  let num = new Float32Array(n);
+  let den = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const a = data[i * 4 + 3] / 255;
+    num[i] = lum[i] * a;
+    den[i] = a;
+  }
+  for (let pass = 0; pass < 3; pass++) {
+    num = boxBlur(num, w, h, radius);
+    den = boxBlur(den, w, h, radius);
+  }
+  const field = new Float32Array(n);
+  for (let i = 0; i < n; i++) field[i] = den[i] > 1e-4 ? num[i] / den[i] : 0;
+  return field;
+}
+
+/**
  * Remaps every pixel through a luminance ramp, in place, leaving alpha alone.
  *
  * The source luminance is normalised against the *product's own* range before
@@ -175,19 +274,57 @@ const RAMPS = {
  *
  * A `mix` below 1 keeps a trace of the original chroma, for sources where the
  * hue was carrying shape that the luminance channel alone does not.
+ *
+ * `even` divides out the source's own lighting gradient before the ramp sees
+ * it. Normalising to the full range is the right default when a render is lit
+ * flat, but it is exactly wrong when the render is not: the heat close-up is
+ * lit bright at the bottom and dark at the top, and stretching *that* across a
+ * ramp whose ends are near-black and near-white turns one product into two.
+ * Subtracting the low-frequency field leaves the local shading - the modelling
+ * on each fin - and takes away only the drift across the frame.
+ *
+ * `band` narrows which part of the ramp gets used at all. The red ramp ends at
+ * #FDEEEE, so any blown highlight in a source lands on white, and a radiator
+ * with white faces reads as unpainted rather than lit. Capping the top keeps
+ * specular as the lightest *red* in the image.
  */
-function tint(data, w, h, rampName, mix = 1) {
+function tint(data, w, h, rampName, mix = 1, { even = 0, band = [0, 1] } = {}) {
   const ramp = RAMPS[rampName];
   if (!ramp) throw new Error(`unknown ramp: ${rampName}`);
+
+  const n = w * h;
+  // Integer, and floored exactly as the ramp index used to be, so a job that
+  // sets neither option still produces the byte-identical file it did before.
+  const lum = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    lum[i] = (data[i * 4] * 77 + data[i * 4 + 1] * 150 + data[i * 4 + 2] * 29) >> 8;
+  }
+
+  if (even > 0) {
+    const radius = Math.max(8, Math.round(Math.min(w, h) * 0.2));
+    const field = lightingField(lum, data, w, h, radius);
+    let mean = 0;
+    let count = 0;
+    for (let i = 0; i < n; i++) {
+      if (data[i * 4 + 3] < 24) continue;
+      mean += field[i];
+      count++;
+    }
+    if (count > 0) {
+      mean /= count;
+      // Toward the mean, not onto it: `even` short of 1 leaves a trace of the
+      // original falloff, which is what stops the product looking die-cut.
+      for (let i = 0; i < n; i++) lum[i] -= (field[i] - mean) * even;
+    }
+  }
 
   // Percentile endpoints rather than min/max: a single stray dark pixel from
   // the matte edge would otherwise define the bottom of the range.
   const hist = new Uint32Array(256);
   let opaque = 0;
-  for (let i = 0; i < w * h; i++) {
+  for (let i = 0; i < n; i++) {
     if (data[i * 4 + 3] < 24) continue;
-    const l = (data[i * 4] * 77 + data[i * 4 + 1] * 150 + data[i * 4 + 2] * 29) >> 8;
-    hist[l]++;
+    hist[Math.max(0, Math.min(255, Math.round(lum[i])))]++;
     opaque++;
   }
 
@@ -210,9 +347,10 @@ function tint(data, w, h, rampName, mix = 1) {
   const range = Math.max(24, hi - lo);
 
   // 256-entry lookup, built once per image rather than evaluated per pixel.
+  const [bandLo, bandHi] = band;
   const lut = new Uint8Array(256 * 3);
   for (let i = 0; i < 256; i++) {
-    const t = i / 255;
+    const t = bandLo + (i / 255) * (bandHi - bandLo);
     let a = ramp[0];
     let b = ramp[ramp.length - 1];
     for (let k = 0; k < ramp.length - 1; k++) {
@@ -229,15 +367,11 @@ function tint(data, w, h, rampName, mix = 1) {
     for (let c = 0; c < 3; c++) lut[i * 3 + c] = Math.round(a[1][c] + (b[1][c] - a[1][c]) * s);
   }
 
-  for (let i = 0; i < w * h; i++) {
+  for (let i = 0; i < n; i++) {
     if (data[i * 4 + 3] === 0) continue;
-    const r = data[i * 4];
-    const g = data[i * 4 + 1];
-    const b = data[i * 4 + 2];
-    const raw = (r * 77 + g * 150 + b * 29) >> 8;
-    const lum = Math.max(0, Math.min(255, Math.round(((raw - lo) / range) * 255)));
+    const idx = Math.max(0, Math.min(255, Math.round(((lum[i] - lo) / range) * 255)));
     for (let c = 0; c < 3; c++) {
-      const to = lut[lum * 3 + c];
+      const to = lut[idx * 3 + c];
       data[i * 4 + c] = mix >= 1 ? to : Math.round(data[i * 4 + c] * (1 - mix) + to * mix);
     }
   }
@@ -280,7 +414,7 @@ function flatMatte(data, w, h) {
  *     ramps, so similarity walks the whole ramp; a product edge is a cliff, so
  *     it stops there. An absolute floor keeps a runaway walk out of the body.
  */
-function matte(data, w, h, strict = false) {
+function matte(data, w, h, strict = false, floorOverride = null) {
   const n = w * h;
   const lum = new Uint8Array(n);
   for (let i = 0; i < n; i++) {
@@ -299,7 +433,10 @@ function matte(data, w, h, strict = false) {
 
   const CLEAR = Math.max(200, bg - (strict ? 3 : 8)); // certainly backdrop
   const SOLID = Math.max(160, bg - (strict ? 12 : 30)); // certainly product
-  const FLOOR = Math.max(150, bg - 46); // growth may never go below this
+  // Growth may never go below this. The default is generous because most
+  // sources have a wide, empty gap between backdrop and product; a job sets
+  // `matteFloor` when it does not, and the gap has to be named explicitly.
+  const FLOOR = floorOverride ?? Math.max(150, bg - 46);
   // Similarity growth walks smooth backdrop ramps — and would walk straight
   // into a white product on a white wall, because there is no cliff between
   // them. `strict` turns it off and falls back to a pure threshold, which is
@@ -421,7 +558,21 @@ async function run() {
   /** @type {{id:string,src:string,width:number,height:number}[]} */
   const manifest = [];
 
-  for (const job of JOBS) {
+  /**
+   * `node scripts/prep-assets.mjs sections/heat-silver` rebuilds one asset.
+   *
+   * A full pass is a few minutes of avif encoding, which is the right price to
+   * pay once and a bad one to pay per attempt while dialling in a tint or a
+   * matte on a single image. The manifest is deliberately NOT written on a
+   * filtered run: it is assembled from the jobs this pass actually processed,
+   * so writing it would delete every entry that was filtered out. Finish with
+   * an unfiltered run.
+   */
+  const only = process.argv.slice(2);
+  const jobs = only.length ? JOBS.filter((j) => only.includes(j.id)) : JOBS;
+  if (only.length && !jobs.length) throw new Error(`no job matches: ${only.join(', ')}`);
+
+  for (const job of jobs) {
     if (!available.has(job.src)) {
       report.push({ id: job.id, status: `MISSING SOURCE ${job.src}` });
       continue;
@@ -435,10 +586,15 @@ async function run() {
     if (job.alpha) {
       const { data, info } = await img.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
       if (job.flat) flatMatte(data, info.width, info.height);
-      else matte(data, info.width, info.height, job.strictMatte === true);
+      else matte(data, info.width, info.height, job.strictMatte === true, job.matteFloor ?? null);
       // After the matte, so the studio background never bleeds into the ramp,
       // and before the knockout, which overwrites colour outright.
-      if (job.tint) tint(data, info.width, info.height, job.tint, job.tintMix ?? 1);
+      if (job.tint) {
+        tint(data, info.width, info.height, job.tint, job.tintMix ?? 1, {
+          even: job.evenLighting ?? 0,
+          band: job.tintBand ?? [0, 1],
+        });
+      }
       if (job.knockout) {
         // Flatten every retained pixel to one colour, keeping the matte's
         // antialiasing — used for the logo on the indigo-900 footer.
@@ -521,6 +677,12 @@ async function run() {
 
     manifest.push({ id: job.id, src: `/${job.id}.webp`, width: finalW, height: finalH, widths });
     report.push({ id: job.id, size: `${finalW}x${finalH}`, alpha: job.alpha ? 'yes' : '' });
+  }
+
+  if (only.length) {
+    console.table(report);
+    console.log('filtered run — manifest left alone; rerun without arguments before committing');
+    return;
   }
 
   manifest.sort((a, b) => a.id.localeCompare(b.id));
