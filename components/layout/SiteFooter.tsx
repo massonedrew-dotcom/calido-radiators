@@ -22,7 +22,7 @@ export function SiteFooter({ dict }: { dict: Dictionary }) {
       <div className="frame py-14">
         <div className="grid-frame gap-y-10">
           <div className="col-span-4 md:col-span-4">
-            <BrandMark alt={dict.common.logoAlt} className="h-10 w-auto" />
+            <BrandMark alt={dict.common.logoAlt} tone="dark" className="h-10 w-auto" />
             <p className="mt-5 max-w-[32ch] text-sm text-fg-mute">{dict.brand.tagline}</p>
           </div>
 
