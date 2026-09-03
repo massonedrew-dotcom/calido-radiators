@@ -87,8 +87,8 @@ export const ru = {
 
   // The strip above the header — the three facts that answer "who is this" before
   // the visitor has scrolled anything. Deliberately not the phone and address of
-  // the source template: those are still `уточняется` in `contact.details`, and a
-  // topbar whose every plate reads "TBD" is worse than no topbar.
+  // the source template: the phone belongs beside the form, not in a strip the
+  // visitor reads before they know what the company makes.
   topbar: {
     label: 'Коротко о заводе',
     items: [
@@ -130,6 +130,10 @@ export const ru = {
     count: 5_000_000,
     unit: 'секций в год',
     standards: 'Производство соответствует международным стандартам EN и ISO.',
+    // Split out rather than marked up in the string: the component wraps this
+    // substring in <strong>, and a dictionary that carries HTML is a dictionary
+    // a translator can break.
+    standardsMark: 'EN и ISO',
     factoryAlt: 'Схематическая иконка производственного корпуса',
     imageAlt: 'Радиатор Calido в зелёном исполнении',
   },
@@ -206,7 +210,7 @@ export const ru = {
     title: 'Высокая теплоотдача',
     lead: 'Современная конструкция обеспечивает быстрый нагрев помещения и эффективное распределение тепла.',
     peakLabel: 'До',
-    peak: 198,
+    peak: 230,
     peakUnit: 'Вт на секцию',
     imageAlt: 'Оребрение радиатора Calido крупным планом',
   },
@@ -303,16 +307,38 @@ export const ru = {
   scale: {
     kicker: 'Сравнение',
     title: 'Размеры в масштабе',
-    note: 'Все шесть моделей в одном масштабе. Разница по высоте секции составляет 161 мм между самой высокой и самой низкой.',
+    // First sentence only. The second one used to print "161 мм" as a literal,
+    // which was true of the height and wrong of the other two metrics the
+    // switch below offers — so the spread now comes from `gap`, per metric,
+    // with the figure computed off the same table the bars are drawn from.
+    note: 'Все шесть моделей в одном масштабе.',
     lineupAlt: 'Модельный ряд радиаторов Calido в ряд по убыванию высоты',
     // The height spread across five of the six models is 33 mm, which no chart
     // can make legible on its own — hence the metric switch and the printed
     // figures next to every bar.
     metricLabel: 'Сравнить по',
+    // `gap` carries the whole sentence rather than a noun the component would
+    // have to decline: "по высоте секции" and "по весу секции" need different
+    // cases, and the superlatives at the end change gender with the subject.
     metrics: [
-      { id: 'height', label: 'Высоте секции', unit: 'мм' },
-      { id: 'output', label: 'Теплоотдаче', unit: 'Вт' },
-      { id: 'weight', label: 'Весу секции', unit: 'кг' },
+      {
+        id: 'height',
+        label: 'Высоте секции',
+        unit: 'мм',
+        gap: 'Разница по высоте секции составляет {value} между самой высокой и самой низкой.',
+      },
+      {
+        id: 'output',
+        label: 'Теплоотдаче',
+        unit: 'Вт',
+        gap: 'Разница по теплоотдаче составляет {value} между самой мощной и самой слабой.',
+      },
+      {
+        id: 'weight',
+        label: 'Весу секции',
+        unit: 'кг',
+        gap: 'Разница по весу секции составляет {value} между самой тяжёлой и самой лёгкой.',
+      },
     ],
     axisLabel: 'Шкала',
     baselineLabel: 'Общая база',
@@ -353,7 +379,16 @@ export const ru = {
     lead: 'Расскажите о задаче. Подберём модель и рассчитаем количество секций.',
     form: {
       name: { label: 'Имя', placeholder: 'Как к вам обращаться' },
-      phone: { label: 'Телефон', placeholder: '+998 __ ___ __ __' },
+      phone: {
+        label: 'Телефон',
+        // The dial code lives in the selector beside the field, so the
+        // placeholder shows only what the visitor actually types.
+        placeholder: '90 123 45 67',
+        countryLabel: 'Код страны',
+        empty: 'Укажите номер телефона.',
+        length: 'Проверьте номер: для выбранной страны в нём другое количество цифр.',
+      },
+      telegram: { label: 'Telegram', placeholder: '@username', hint: 'необязательно' },
       message: { label: 'Сообщение', placeholder: 'Объект, количество секций, сроки' },
       submit: 'Отправить заявку',
       sending: 'Отправляем…',
@@ -361,20 +396,28 @@ export const ru = {
       error: 'Не удалось отправить. Попробуйте ещё раз.',
       required: 'Обязательное поле',
     },
-    summary: [
-      { label: 'Производство', value: 'Узбекистан, с 2015 года' },
-      { label: 'Мощность', value: '5 000 000 секций в год' },
-      { label: 'Стандарты', value: 'EN, ISO' },
-      { label: 'Гарантия', value: '10 лет' },
-    ],
-    // TODO: заменить на реальные реквизиты, когда заказчик их пришлёт.
+    direct: {
+      title: 'Или напишите напрямую',
+      // Accessible names for the links. The visible label is the contact value
+      // itself, which on its own does not say what channel it is.
+      names: {
+        phone: 'Телефон',
+        telegram: 'Telegram',
+        whatsapp: 'WhatsApp',
+        email: 'E-mail',
+        location: 'Локация',
+      },
+      locationAria: 'Открыть расположение завода на Яндекс Картах',
+    },
+    // Values come from content/contacts.ts — the single place requisites are
+    // edited. Only the labels are translated, which is why they are all that
+    // is left here.
     details: {
       title: 'Контакты',
-      items: [
-        { label: 'Телефон', value: 'уточняется' },
-        { label: 'E-mail', value: 'уточняется' },
-        { label: 'Адрес', value: 'уточняется' },
-      ],
+      labels: { phone: 'Телефон', email: 'E-mail', location: 'Локация', address: 'Адрес' },
+      // The location row has a label but no printable value — a map URL is not
+      // something anyone reads — so this is what the link itself says.
+      mapText: 'Яндекс Карты',
     },
     social: { title: 'Соцсети', items: [] as { label: string; href: string }[] },
     legal: '© {year} Calido Radiators®. Все права защищены.',

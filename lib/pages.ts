@@ -58,10 +58,15 @@ export interface PageDef {
    * page title and the breadcrumb.
    *
    * Indigo is the default because it is the brand's own colour and it can carry
-   * a heading at any size. Red is reserved for the page whose entire job is the
-   * call to action, so that "red band" means one thing site-wide rather than
-   * being the general-purpose header colour it was when the home page opened on
-   * a full-bleed molten gradient.
+   * a heading at any size.
+   *
+   * The contact page used to take red on the reasoning that the page whose
+   * entire job is the call to action should announce itself in the CTA colour.
+   * In practice it did the opposite of what the accent is for: 240px of #D91222
+   * is the loudest thing on the site by a wide margin, and once the band is
+   * that loud the actual red controls - the floating CTA, the submit button,
+   * the active-model highlight - stop reading as accents at all. Red is a
+   * quantity, and it only means "act here" while it stays scarce.
    */
   readonly plate: PlateId;
   /** True where this page appears in the primary nav. Home is the logo. */
@@ -110,7 +115,7 @@ export const PAGES: readonly PageDef[] = [
     id: 'contact',
     slug: 'contact',
     sections: ['contact'],
-    plate: 'red',
+    plate: 'indigo',
     inNav: true,
   },
 ];

@@ -123,6 +123,10 @@ export const en: Dictionary = {
     count: 5_000_000,
     unit: 'sections per year',
     standards: 'Production complies with the international EN and ISO standards.',
+    // Split out rather than marked up in the string: the component wraps this
+    // substring in <strong>, and a dictionary that carries HTML is a dictionary
+    // a translator can break.
+    standardsMark: 'EN and ISO',
     factoryAlt: 'Line icon of a production building',
     imageAlt: 'Calido radiator in a green finish',
   },
@@ -193,7 +197,7 @@ export const en: Dictionary = {
     title: 'High heat output',
     lead: 'The modern design heats a room quickly and distributes warmth evenly.',
     peakLabel: 'Up to',
-    peak: 198,
+    peak: 230,
     peakUnit: 'W per section',
     imageAlt: 'Close-up of the fins on a Calido radiator',
   },
@@ -284,13 +288,28 @@ export const en: Dictionary = {
   scale: {
     kicker: 'Comparison',
     title: 'True-scale sizes',
-    note: 'All six models at one scale. The section-height spread is 161 mm between the tallest and the shortest.',
+    note: 'All six models at one scale.',
     lineupAlt: 'The Calido radiator range lined up by descending height',
     metricLabel: 'Compare by',
     metrics: [
-      { id: 'height', label: 'Section height', unit: 'mm' },
-      { id: 'output', label: 'Heat output', unit: 'W' },
-      { id: 'weight', label: 'Section weight', unit: 'kg' },
+      {
+        id: 'height',
+        label: 'Section height',
+        unit: 'mm',
+        gap: 'The spread is {value} between the tallest section and the shortest.',
+      },
+      {
+        id: 'output',
+        label: 'Heat output',
+        unit: 'W',
+        gap: 'The spread is {value} between the highest output and the lowest.',
+      },
+      {
+        id: 'weight',
+        label: 'Section weight',
+        unit: 'kg',
+        gap: 'The spread is {value} between the heaviest section and the lightest.',
+      },
     ],
     axisLabel: 'Scale',
     baselineLabel: 'Shared baseline',
@@ -331,7 +350,14 @@ export const en: Dictionary = {
     lead: 'Tell us about the project. We will pick the model and work out the section count.',
     form: {
       name: { label: 'Name', placeholder: 'What should we call you' },
-      phone: { label: 'Phone', placeholder: '+998 __ ___ __ __' },
+      phone: {
+        label: 'Phone',
+        placeholder: '90 123 45 67',
+        countryLabel: 'Country code',
+        empty: 'Enter a phone number.',
+        length: 'Check the number: the selected country expects a different digit count.',
+      },
+      telegram: { label: 'Telegram', placeholder: '@username', hint: 'optional' },
       message: { label: 'Message', placeholder: 'Site, section count, timeline' },
       submit: 'Send request',
       sending: 'Sending…',
@@ -339,20 +365,21 @@ export const en: Dictionary = {
       error: 'Could not send. Please try again.',
       required: 'Required field',
     },
-    summary: [
-      { label: 'Production', value: 'Uzbekistan, since 2015' },
-      { label: 'Capacity', value: '5,000,000 sections a year' },
-      { label: 'Standards', value: 'EN, ISO' },
-      { label: 'Warranty', value: '10 years' },
-    ],
-    // TODO: swap in the real company details once the client supplies them.
+    direct: {
+      title: 'Or reach us directly',
+      names: {
+        phone: 'Phone',
+        telegram: 'Telegram',
+        whatsapp: 'WhatsApp',
+        email: 'E-mail',
+        location: 'Location',
+      },
+      locationAria: 'Open the plant location on Yandex Maps',
+    },
     details: {
       title: 'Contacts',
-      items: [
-        { label: 'Phone', value: 'to be confirmed' },
-        { label: 'E-mail', value: 'to be confirmed' },
-        { label: 'Address', value: 'to be confirmed' },
-      ],
+      labels: { phone: 'Phone', email: 'E-mail', location: 'Location', address: 'Address' },
+      mapText: 'Yandex Maps',
     },
     social: { title: 'Social', items: [] },
     legal: '© {year} Calido Radiators®. All rights reserved.',

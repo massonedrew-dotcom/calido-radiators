@@ -99,7 +99,11 @@ export const MODELS: readonly RadiatorModel[] = [
     // lower test pressure (20 atm) than the standard ELEGANT — transcribed, not
     // inherited.
     slug: 'elegant-premium',
-    name: 'ELEGANT PREMIUM',
+    // Display label only. The slug stays `elegant-premium` because it is the
+    // JSON-LD sku and @id, the key into every dictionary's taglines and
+    // highlights, and the name of the render on disk - renaming it would break
+    // all three to change a word on a tab.
+    name: 'PREMIUM',
     height: 500,
     section: { width: 95, depth: 75, height: 576 },
     image: 'models/elegant-premium',
