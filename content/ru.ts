@@ -316,26 +316,34 @@ export const ru = {
     // The height spread across five of the six models is 33 mm, which no chart
     // can make legible on its own — hence the metric switch and the printed
     // figures next to every bar.
-    metricLabel: 'Сравнить по',
-    // `gap` carries the whole sentence rather than a noun the component would
-    // have to decline: "по высоте секции" and "по весу секции" need different
-    // cases, and the superlatives at the end change gender with the subject.
+    // "Показатель", not "Сравнить по". The three labels below are the names of
+    // the metrics in the nominative, because each one is read on its own as a
+    // button caption; the dative they used to be in only parsed while the eye
+    // carried "Сравнить по" down into the chip, and standalone "ВЕСУ СЕКЦИИ"
+    // reads as a typo. The legend changes with them — the alternative was to
+    // leave one label in the nominative and two in the dative, which is worse
+    // than either.
+    metricLabel: 'Показатель',
+    // `gap` carries the whole sentence rather than being assembled from the
+    // label: the sentence needs the dative ("по весу секции") that the buttons
+    // no longer use, and the superlatives at the end change gender with the
+    // subject.
     metrics: [
       {
         id: 'height',
-        label: 'Высоте секции',
+        label: 'Высота секции',
         unit: 'мм',
         gap: 'Разница по высоте секции составляет {value} между самой высокой и самой низкой.',
       },
       {
         id: 'output',
-        label: 'Теплоотдаче',
+        label: 'Теплоотдача',
         unit: 'Вт',
         gap: 'Разница по теплоотдаче составляет {value} между самой мощной и самой слабой.',
       },
       {
         id: 'weight',
-        label: 'Весу секции',
+        label: 'Вес секции',
         unit: 'кг',
         gap: 'Разница по весу секции составляет {value} между самой тяжёлой и самой лёгкой.',
       },
