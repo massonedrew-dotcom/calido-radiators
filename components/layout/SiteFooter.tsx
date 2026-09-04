@@ -15,7 +15,12 @@ import { PAGES, pagePath } from '@/lib/pages';
  * page a visitor lands on last.
  */
 export function SiteFooter({ dict }: { dict: Dictionary }) {
-  const year = new Date().getFullYear();
+  // "2015–2026", collapsing to "2015" in the year the site was built. FOUNDED
+  // is the same figure the About page and the topbar print, taken from the
+  // dictionary rather than repeated here.
+  const now = new Date().getFullYear();
+  const founded = dict.about.since;
+  const year = now > founded ? `${founded}–${now}` : String(founded);
   const locale = dict.locale === 'en' ? 'en' : 'ru';
 
   return (
@@ -23,7 +28,16 @@ export function SiteFooter({ dict }: { dict: Dictionary }) {
       <div className="frame py-14">
         <div className="grid-frame gap-y-10">
           <div className="col-span-4 md:col-span-4">
-            <BrandMark alt={dict.common.logoAlt} tone="dark" className="h-10 w-auto" />
+            {/* A link, like the one in the header. A logo that is not clickable
+                is a dead end at the bottom of every page, and it is the second
+                internal link to the home page that a crawler expects to find. */}
+            <Link
+              href={pagePath('home', locale)}
+              aria-label={dict.common.logoAlt}
+              className="inline-block"
+            >
+              <BrandMark alt={dict.common.logoAlt} tone="dark" className="h-10 w-auto" />
+            </Link>
             <p className="mt-5 max-w-[32ch] text-sm text-fg-mute">{dict.brand.tagline}</p>
           </div>
 

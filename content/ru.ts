@@ -396,6 +396,7 @@ export const ru = {
         empty: 'Укажите номер телефона.',
         length: 'Проверьте номер: для выбранной страны в нём другое количество цифр.',
       },
+      email: { label: 'E-mail', placeholder: 'you@company.uz', hint: 'необязательно' },
       telegram: { label: 'Telegram', placeholder: '@username', hint: 'необязательно' },
       message: { label: 'Сообщение', placeholder: 'Объект, количество секций, сроки' },
       submit: 'Отправить заявку',
@@ -428,11 +429,15 @@ export const ru = {
       mapText: 'Яндекс Карты',
     },
     social: { title: 'Соцсети', items: [] as { label: string; href: string }[] },
+    // {year} expands to "2015–<current>": the founding year is a trust signal
+    // in its own right, and a copyright line that only ever shows the current
+    // year says nothing about how long the plant has been running.
     legal: '© {year} Calido Radiators®. Все права защищены.',
   },
 
   common: {
     logoAlt: 'Calido Radiators',
     close: 'Закрыть',
+    toTop: 'Наверх',
   },
 } as const;

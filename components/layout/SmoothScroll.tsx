@@ -33,14 +33,20 @@ export function SmoothScroll() {
 
     lenis.on('scroll', ScrollTrigger.update);
 
-    if (process.env.NODE_ENV !== 'production') {
-      // Dev-only handle. Lenis owns the scroll position, so a plain
-      // `window.scrollTo` from a console or a test harness is overwritten on
-      // the next rAF, and every scroll-linked measurement taken after it is a
-      // reading of the wrong frame. Anything driving this page
-      // programmatically has to go through the instance.
-      (window as unknown as Record<string, unknown>).__lenis = lenis;
-    }
+    // The handle, in every build rather than only in development.
+    //
+    // Lenis owns the scroll position, so a plain `window.scrollTo` is
+    // overwritten on the next rAF and every scroll-linked measurement taken
+    // after it reads the wrong frame. Anything driving this page
+    // programmatically has to go through the instance — which was true of a
+    // console and a test harness when this was dev-only, and is now true of
+    // ScrollTop, which ships.
+    (window as unknown as Record<string, unknown>).__lenis = lenis;
+    // Announced rather than left to be discovered: `useScrollPosition` cannot
+    // assume this effect ran before its own, and polling for the handle on the
+    // next frame would leave every scroll-linked control dead in a background
+    // tab, which gets no frames.
+    window.dispatchEvent(new Event('lenis:ready'));
 
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
@@ -69,6 +75,7 @@ export function SmoothScroll() {
       gsap.ticker.lagSmoothing(500, 33);
       lenis.destroy();
       lenisRef.current = null;
+      delete (window as unknown as Record<string, unknown>).__lenis;
     };
   }, [reduced]);
 

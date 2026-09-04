@@ -5,6 +5,7 @@ import { HashRouting } from '@/components/layout/HashRouting';
 import { Header } from '@/components/layout/Header';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ProgressRail } from '@/components/layout/ProgressRail';
+import { ScrollTop } from '@/components/layout/ScrollTop';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SmoothScroll } from '@/components/layout/SmoothScroll';
 import { TopBar } from '@/components/layout/TopBar';
@@ -50,6 +51,7 @@ export function PageShell({
 
       <SiteFooter dict={dict} />
       <FloatingCta dict={dict} page={page} />
+      <ScrollTop label={dict.common.toTop} />
     </>
   );
 }

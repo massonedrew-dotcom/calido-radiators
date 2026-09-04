@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { BrandMark } from '@/components/layout/BrandMark';
 import type { Dictionary } from '@/content';
+import { useScrollPosition } from '@/lib/hooks';
 import { PAGES, pagePath, type PageId } from '@/lib/pages';
 
 /**
@@ -35,16 +36,14 @@ export function Header({ dict, page }: { dict: Dictionary; page: PageId }) {
   // being reachable, and cannot be listed twice with different labels.
   const navItems = PAGES.filter((p) => p.inNav);
 
-  useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setHidden(y > 400 && y > lastY.current);
-      lastY.current = y;
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  // Through the shared subscription rather than a window listener. Lenis clips
+  // overflow on html and body and scrolls the page itself, so the native event
+  // never fires and this retract had quietly stopped working everywhere except
+  // the reduced-motion path — see `useScrollPosition`.
+  useScrollPosition((y) => {
+    setHidden(y > 400 && y > lastY.current);
+    lastY.current = y;
+  });
 
   // Close the sheet on Escape and lock the page behind it.
   useEffect(() => {
