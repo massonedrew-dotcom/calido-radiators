@@ -1,6 +1,66 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+type LenisLike = {
+  on: (event: 'scroll', cb: () => void) => void;
+  off: (event: 'scroll', cb: () => void) => void;
+};
+
+/**
+ * Subscribe to scroll position.
+ *
+ * `window.addEventListener('scroll', …)` does not work on this site, and it is
+ * worth stating plainly because it looks like it should: Lenis puts
+ * `overflow: clip` on html and body and moves the page itself, so the browser
+ * fires no native scroll event at all. Measured on /models/ — a 2200px
+ * programmatic scroll produced zero window scroll events and zero document
+ * ones, while `lenis.on('scroll')` fired normally. Anything watching scroll
+ * has to go through the instance.
+ *
+ * Both subscriptions are attached anyway, because exactly one of them is ever
+ * live: with Lenis running the native event never fires, and on the
+ * reduced-motion path Lenis is never created and the browser scrolls the page
+ * itself. That is also why this cannot be "use Lenis, else use window" — which
+ * of the two applies is a media query away from changing.
+ *
+ * The Lenis handle is attached to immediately if it is already there, and
+ * otherwise on the `lenis:ready` event SmoothScroll fires when it creates one.
+ * The obvious alternative — look again next animation frame — is wrong in a
+ * way that is easy to miss: a page opened in a background tab gets no frames
+ * at all, so the subscription would arm only once the visitor switched to it.
+ * An event has no such dependency, and it also removes the assumption that
+ * SmoothScroll's effect happens to run before this one.
+ */
+export function useScrollPosition(onScroll: (y: number) => void): void {
+  const latest = useRef(onScroll);
+  latest.current = onScroll;
+
+  useEffect(() => {
+    const fire = () => latest.current(window.scrollY);
+    fire();
+
+    window.addEventListener('scroll', fire, { passive: true });
+
+    let attached: LenisLike | undefined;
+    const attach = () => {
+      const lenis = (window as unknown as { __lenis?: LenisLike }).__lenis;
+      if (!lenis || attached === lenis) return;
+      lenis.on('scroll', fire);
+      attached = lenis;
+      fire();
+    };
+
+    attach();
+    window.addEventListener('lenis:ready', attach);
+
+    return () => {
+      window.removeEventListener('lenis:ready', attach);
+      window.removeEventListener('scroll', fire);
+      attached?.off('scroll', fire);
+    };
+  }, []);
+}
 
 /** useLayoutEffect that does not warn during SSR. */
 export const useIsomorphicLayoutEffect =

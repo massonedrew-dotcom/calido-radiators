@@ -351,6 +351,23 @@ export function RequestForm({
         error={phoneError}
       />
 
+      {/* Optional, and deliberately after the phone rather than instead of it:
+          the plant calls back. But a purchasing department that wants a
+          written quote has nowhere to put an address otherwise, and the form
+          was collecting none. `type="email"` gets the right keyboard on a
+          phone and the browser's own format check; `autocomplete="email"`
+          stops it being retyped. */}
+      <Field
+        id={`${uid}-email`}
+        label={dict.contact.form.email.label}
+        hint={dict.contact.form.email.hint}
+        placeholder={dict.contact.form.email.placeholder}
+        tone={tone}
+        type="email"
+        autoComplete="email"
+        inputMode="email"
+      />
+
       <Field
         id={`${uid}-telegram`}
         label={dict.contact.form.telegram.label}

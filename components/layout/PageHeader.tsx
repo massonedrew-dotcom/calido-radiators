@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { abs } from '@/app/_shared/JsonLd';
 import { Plate } from '@/components/ui/Plate';
 import type { Dictionary } from '@/content';
 import { getPage, pagePath, type PageId } from '@/lib/pages';
@@ -28,8 +29,36 @@ export function PageHeader({ page, dict }: { page: PageId; dict: Dictionary }) {
   const locale = dict.locale === 'en' ? 'en' : 'ru';
   const copy = dict.pages[page];
 
+  /**
+   * The visible trail, again, for a crawler.
+   *
+   * Emitted here rather than alongside the rest of the graph in JsonLd, and
+   * that is the point: `BreadcrumbList` has to describe the breadcrumbs that
+   * are actually on the page, and the only way to guarantee that is to build
+   * both from the same two values in the same component. Put it on the home
+   * page and it would be describing a trail that does not exist there — which
+   * is why JsonLd, which only renders on the home page, is the wrong home for
+   * it.
+   */
+  const breadcrumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { name: dict.pages.home.nav, item: abs(pagePath('home', locale)) },
+      { name: copy.nav, item: abs(pagePath(page, locale)) },
+    ].map((entry, i) => ({ '@type': 'ListItem', position: i + 1, ...entry })),
+  };
+
   return (
     <Plate tone={plate} as="div" className="relative">
+      <script
+        type="application/ld+json"
+        // Static, locally-built payload; no user input reaches this string.
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbs).replace(/</g, '\\u003c'),
+        }}
+      />
+
       <div className="frame flex flex-col justify-end pt-14 pb-12 lg:pt-20 lg:pb-16">
         <nav aria-label={dict.breadcrumb.label}>
           <ol className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.6875rem] font-bold tracking-[0.16em] uppercase">

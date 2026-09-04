@@ -357,6 +357,7 @@ export const en: Dictionary = {
         empty: 'Enter a phone number.',
         length: 'Check the number: the selected country expects a different digit count.',
       },
+      email: { label: 'E-mail', placeholder: 'you@company.com', hint: 'optional' },
       telegram: { label: 'Telegram', placeholder: '@username', hint: 'optional' },
       message: { label: 'Message', placeholder: 'Site, section count, timeline' },
       submit: 'Send request',
@@ -388,5 +389,6 @@ export const en: Dictionary = {
   common: {
     logoAlt: 'Calido Radiators',
     close: 'Close',
+    toTop: 'Back to top',
   },
 };

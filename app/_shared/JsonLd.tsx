@@ -15,7 +15,7 @@ import { withBasePath } from '@/lib/basePath';
 
 // SITE_URL already carries the deployment prefix, but a leading-slash path
 // would discard it during resolution, so the prefix is applied before joining.
-const abs = (path: string) => new URL(withBasePath(path), SITE_URL).toString();
+export const abs = (path: string) => new URL(withBasePath(path), SITE_URL).toString();
 
 function organization(dict: Dictionary) {
   return {

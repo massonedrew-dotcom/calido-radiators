@@ -126,6 +126,11 @@ export function buildMetadata(
       languages: {
         'ru-RU': pagePath(page, 'ru'),
         en: pagePath(page, 'en'),
+        // Which version a crawler should serve when it matches neither. Without
+        // it the two alternates describe a closed set and anything outside it
+        // is the engine's guess; Russian is the primary market, so it is not a
+        // guess worth leaving open.
+        'x-default': pagePath(page, 'ru'),
       },
     },
     openGraph: {
@@ -141,7 +146,19 @@ export function buildMetadata(
     robots: { index: true, follow: true },
     // Declared explicitly rather than by file convention: with two root
     // layouts a conventional app/icon file only attaches to one of them.
-    icons: { icon: [{ url: withBasePath('/icon.svg'), type: 'image/svg+xml' }] },
+    //
+    // The SVG is the mark; the two rasters are for the places that cannot use
+    // it. Yandex's favicon crawler wants a bitmap and takes 120x120, and iOS
+    // draws the home-screen icon from apple-touch-icon at 180 rather than
+    // rendering the SVG. Both are generated from the same icon.svg, so there is
+    // one drawing and no chance of the three drifting.
+    icons: {
+      icon: [
+        { url: withBasePath('/icon.svg'), type: 'image/svg+xml' },
+        { url: withBasePath('/icon-120.png'), sizes: '120x120', type: 'image/png' },
+      ],
+      apple: [{ url: withBasePath('/apple-touch-icon.png'), sizes: '180x180' }],
+    },
   };
 }
 
